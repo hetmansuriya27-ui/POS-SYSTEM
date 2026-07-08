@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <title>Kitchen Orders - X Hotel Staff</title>
+    
+    <link href="../css/styles.css?v=1.4" rel="stylesheet" />
+    <link href="../css/pos.css" rel="stylesheet" />
+    
+    <!-- Firebase SDK Compat CDN -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics-compat.js"></script>
+    <script src="../js/firebase-config.js"></script>
+
+    <script src="https://use.fontawesome.com/releases/v6.3.0/js/all.js" crossorigin="anonymous"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    
+    <script src="../js/admin-component-loader.js"></script>
+</head>
+<body class="sb-nav-fixed">
+
+    <!-- Admin Side Topnav & Sidebar Loader (Injected by admin-component-loader.js) -->
+    <div id="admin-header"></div>
+
+    <!-- Main Content Area -->
+    <div id="layoutSidenav_content" style="padding-top: 56px;">
+        <main>
+            <div class="container-fluid px-4 pt-4">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h1 class="mt-2" style="font-weight: 700; color: #1C1427;">Kitchen Orders</h1>
+                </div>
+
+                <div class="card mb-4" style="border: none; box-shadow: 0 4px 12px rgba(0,0,0,0.08);">
+                    <div class="card-body p-0">
+                        <table class="table table-striped table-hover mb-0" style="font-size: 1.1em;">
+                            <thead class="thead-dark">
+                                <tr>
+                                    <th>Kitchen ID</th>
+                                    <th>Table No</th>
+                                    <th>Item Name</th>
+                                    <th>Quantity</th>
+                                    <th>Time Submitted</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="kitchen-orders-tbody">
+                                <tr>
+                                    <td colspan="6" class="text-center py-4" style="color: #888;">
+                                        <i class="fa fa-spinner fa-spin mr-2"></i> Listening to live kitchen orders...
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="../js/scripts.js" type="text/javascript"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            let menuCache = {};
+
+            function initKitchen() {
+                if (typeof firebase === 'undefined' || !window.db) {
+                    setTimeout(initKitchen, 100);
+                    return;
+                }
+
+                // 1. Fetch menu cache to match item_id to item_name
+                window.db.collection("menu").get().then(menuSnapshot => {
+                    menuSnapshot.forEach(doc => {
+                        menuCache[doc.data().item_id] = doc.data().item_name;
+                    });
+                    
+                    // 2. Load and listen to live kitchen orders in real-time
+                    listenToKitchenOrders();
+                }).catch(err => console.error("Error fetching menu cache:", err));
+            }
+
+            function listenToKitchenOrders() {
+                window.db.collection("kitchen")
+                    .orderBy("time_submitted", "asc")
+                    .onSnapshot(snapshot => {
+                        const tbody = document.getElementById("kitchen-orders-tbody");
+                        tbody.innerHTML = "";
+
+                        if (snapshot.empty) {
+                            tbody.innerHTML = `
+                                <tr>
+                                    <td colspan="6" class="text-center py-4" style="color: #666; font-weight: 500;">
+                                        <i class="fa-regular fa-face-smile mr-2"></i> No active orders in the kitchen!
+                                    </td>
+                                </tr>
+                            `;
+                            return;
+                        }
+
+                        snapshot.forEach(doc => {
+                            const order = doc.data();
+                            const docId = doc.id;
+                            const itemName = menuCache[order.item_id] || order.item_id || "Deleted Item";
+                            
+                            const timeStr = new Date(order.time_submitted).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+
+                            const tr = document.createElement("tr");
+                            tr.innerHTML = `
+                                <td style="font-weight: bold; color: #1C1427;">#${order.kitchen_id}</td>
+                                <td><span class="badge bg-secondary p-2" style="font-size: 1em;">Table ${order.table_no}</span></td>
+                                <td style="font-weight: bold; color: #1C1427;">${itemName}</td>
+                                <td style="font-weight: bold; color: crimson;">x${order.quantity}</td>
+                                <td class="text-muted"><i class="fa fa-clock mr-1"></i> ${timeStr}</td>
+                                <td>
+                                    <button class="btn btn-danger btn-sm done-order-btn" data-doc-id="${docId}" data-order-data='${JSON.stringify(order)}'>
+                                        <i class="fa fa-check mr-1"></i> Done
+                                    </button>
+                                </td>
+                            `;
+                            tbody.appendChild(tr);
+                        });
+
+                        // Attach button click listeners to mark order done
+                        document.querySelectorAll(".done-order-btn").forEach(btn => {
+                            btn.addEventListener("click", function() {
+                                const docId = this.dataset.docId;
+                                const orderData = JSON.parse(this.dataset.orderData);
+                                
+                                completeOrder(docId, orderData);
+                            });
+                        });
+                    }, err => {
+                        console.error("Kitchen orders listener failed:", err);
+                        document.getElementById("kitchen-orders-tbody").innerHTML = `
+                            <tr><td colspan="6" class="text-center text-danger py-4">Failed to connect to kitchen database.</td></tr>
+                        `;
+                    });
+            }
+
+            async function completeOrder(docId, orderData) {
+                try {
+                    // Delete order from Firestore kitchen collection
+                    await window.db.collection("kitchen").doc(docId).delete();
+                    console.log(`Order #${orderData.kitchen_id} completed successfully.`);
+                    
+                    // Update linked customer order status to Served
+                    if (orderData.customer_order_id) {
+                        await window.db.collection("customer_orders").doc(orderData.customer_order_id).update({
+                            status: "Served"
+                        });
+                        console.log(`Linked customer order ${orderData.customer_order_id} marked as Served.`);
+                    }
+                    
+                    // Save to local completed list
+                    const staffId = localStorage.getItem("logged_account_id") || "chef";
+                    const completedKey = `chef_completed_${staffId}`;
+                    let completed = [];
+                    try {
+                        completed = JSON.parse(localStorage.getItem(completedKey) || "[]");
+                    } catch(e) {}
+                    
+                    completed.unshift({
+                        kitchen_id: orderData.kitchen_id,
+                        table_no: orderData.table_no,
+                        item_id: orderData.item_id,
+                        quantity: orderData.quantity,
+                        time_completed: new Date().toISOString()
+                    });
+                    
+                    completed = completed.slice(0, 10);
+                    localStorage.setItem(completedKey, JSON.stringify(completed));
+                    
+                    // Dispatch a custom event to notify the sidebar loader
+                    window.dispatchEvent(new Event('chef-order-completed'));
+                } catch (err) {
+                    console.error("Failed to complete order:", err);
+                    alert("Error completing order. Please try again.");
+                }
+            }
+
+            initKitchen();
+        });
+    </script>
+</body>
+</html>
+

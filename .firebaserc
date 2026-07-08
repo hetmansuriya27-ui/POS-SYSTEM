@@ -1,0 +1,20 @@
+{
+  "projects": {
+    "default": "pos-system-1276b"
+  },
+  "targets": {
+    "pos-system-1276b": {
+      "hosting": {
+        "admin": [
+          "pos-system-1276b"
+        ],
+        "customer": [
+          "pos-system-1276b-24326"
+        ],
+        "ordering": [
+          "pos-system-1276b-75869"
+        ]
+      }
+    }
+  }
+}

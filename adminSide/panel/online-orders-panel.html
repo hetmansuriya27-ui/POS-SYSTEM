@@ -1,0 +1,2081 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <title>Swiggy & Zomato Online Orders - X Hotel Staff</title>
+    
+    <link href="../css/styles.css?v=1.4" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    
+    <!-- Firebase SDK Compat CDN -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics-compat.js"></script>
+    <script src="../js/firebase-config.js"></script>
+
+    <script src="https://use.fontawesome.com/releases/v6.3.0/js/all.js" crossorigin="anonymous"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    
+    <script src="../js/admin-component-loader.js"></script>
+    
+    <style>
+        :root {
+            --glass-bg: #ffffff;
+            --glass-border: rgba(0, 0, 0, 0.06);
+            --text-primary: #0f172a;
+            --text-secondary: #64748b;
+            --accent-crimson: #dc143c;
+        }
+        
+        .dashboard-wrapper {
+            padding-left: 240px;
+            padding-top: 40px;
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+            min-height: 100vh;
+            color: var(--text-primary);
+        }
+        
+        .glass-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(15px) saturate(180%);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 24px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        
+        .glass-card:hover {
+            border-color: rgba(220, 20, 60, 0.2);
+            transform: translateY(-2px);
+        }
+        
+        .kpi-title {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 600;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+        }
+        
+        .kpi-value {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 700;
+            font-size: 1.6rem;
+            color: var(--text-primary);
+        }
+        
+        .platform-badge {
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 5px 10px;
+            border-radius: 20px;
+            text-transform: uppercase;
+            display: inline-block;
+        }
+        
+        .badge-swiggy { background: rgba(255, 127, 20, 0.2); color: #ff7f14; border: 1px solid rgba(255, 127, 20, 0.4); }
+        .badge-zomato { background: rgba(235, 34, 63, 0.2); color: #eb223f; border: 1px solid rgba(235, 34, 63, 0.4); }
+        .badge-secondary { background: rgba(148, 163, 184, 0.2); color: #94a3b8; border: 1px solid rgba(148, 163, 184, 0.4); }
+
+        .status-select {
+            font-size: 0.85rem;
+            font-weight: 600;
+            padding: 4px 8px;
+            border-radius: 6px;
+            background: #1e293b;
+            color: #fff;
+            border: 1px solid var(--glass-border);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .status-select:hover {
+            border-color: crimson;
+        }
+
+        .nav-tabs-custom {
+            border-bottom: 1px solid var(--glass-border);
+            margin-bottom: 25px;
+        }
+        
+        .nav-tabs-custom .nav-link {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 600;
+            font-size: 1rem;
+            color: var(--text-secondary);
+            border: none;
+            background: none;
+            padding: 12px 20px;
+            transition: all 0.2s ease;
+        }
+        
+        .nav-tabs-custom .nav-link.active {
+            color: crimson;
+            border-bottom: 3px solid crimson;
+            background: none;
+        }
+
+        .import-sub-tab-link {
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: var(--text-secondary) !important;
+            background-color: rgba(255, 255, 255, 0.03) !important;
+            border: 1px solid var(--glass-border) !important;
+            margin-right: 8px;
+            border-radius: 8px !important;
+            padding: 8px 16px !important;
+            transition: all 0.2s ease;
+        }
+        
+        .import-sub-tab-link.active {
+            background-color: crimson !important;
+            color: white !important;
+            border-color: crimson !important;
+            box-shadow: 0 4px 10px rgba(220, 20, 60, 0.25);
+        }
+        
+        .drag-drop-zone {
+            border: 2px dashed rgba(255, 255, 255, 0.15);
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.02);
+            padding: 35px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .drag-drop-zone:hover, .drag-drop-zone.dragover {
+            border-color: crimson;
+            background: rgba(220, 20, 60, 0.05);
+        }
+        
+        .menu-item-counter {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--glass-border);
+            border-radius: 8px;
+            padding: 8px 12px;
+            margin-bottom: 8px;
+            transition: border-color 0.2s ease;
+        }
+        
+        .menu-item-counter:hover {
+            border-color: rgba(255, 255, 255, 0.25);
+        }
+
+        .filter-input {
+            background-color: rgba(15, 23, 42, 0.6);
+            border: 1px solid var(--glass-border);
+            color: #fff;
+            border-radius: 8px;
+            padding: 8px 12px;
+            font-size: 0.9rem;
+        }
+        
+        .filter-input:focus {
+            background-color: rgba(15, 23, 42, 0.85);
+            border-color: crimson;
+            color: #fff;
+            box-shadow: none;
+            outline: none;
+        }
+
+        /* --- Tablet & Mobile Responsive Enhancements --- */
+        @media (max-width: 1024px) {
+            .dashboard-wrapper {
+                padding-left: 0;
+                padding-top: 70px;
+                padding-right: 15px;
+                padding-left: 15px;
+            }
+            .sb-topnav {
+                z-index: 1030;
+            }
+            #layoutSidenav_nav {
+                display: none;
+            }
+            .sb-sidenav-toggled #layoutSidenav_nav {
+                display: block;
+                position: fixed;
+                top: 56px;
+                left: 0;
+                width: 225px;
+                height: 100vh;
+                z-index: 1039;
+            }
+            .kpi-value {
+                font-size: 1.4rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .kpi-value {
+                font-size: 1.25rem;
+            }
+            .glass-card {
+                padding: 15px;
+                margin-bottom: 15px;
+            }
+            .table-responsive {
+                border: none;
+            }
+        }
+        
+        /* --- Native Light Theme Rules --- */
+        .dashboard-wrapper {
+            background-color: #f8fafc;
+            color: #0f172a;
+        }
+        
+        .glass-card {
+            background: #ffffff;
+            border-color: rgba(0, 0, 0, 0.06);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.03), 0 1px 3px rgba(0, 0, 0, 0.01);
+        }
+        
+        .glass-card:hover {
+            border-color: rgba(220, 20, 60, 0.15);
+        }
+        
+        .kpi-title {
+            color: #64748b;
+        }
+        
+        .kpi-value {
+            color: #0f172a;
+        }
+        
+        h1, h3, h4, h5 {
+            color: #0f172a !important;
+        }
+        
+        .text-white {
+            color: #0f172a !important;
+        }
+        
+        p {
+            color: #64748b !important;
+        }
+
+        .table {
+            color: #0f172a !important;
+        }
+
+        .table-striped tbody tr:nth-of-type(odd) {
+            background-color: rgba(0, 0, 0, 0.02);
+        }
+
+        .table-bordered td, .table-bordered th {
+            border-color: #e2e8f0 !important;
+        }
+
+        .filter-input {
+            background-color: #ffffff;
+            border-color: #cbd5e1;
+            color: #0f172a;
+        }
+
+        .filter-input:focus {
+            background-color: #ffffff;
+            border-color: crimson;
+            color: #0f172a;
+        }
+
+        .menu-item-counter {
+            background: #f8fafc;
+            border-color: rgba(0, 0, 0, 0.06);
+        }
+
+        .menu-item-counter:hover {
+            border-color: rgba(0, 0, 0, 0.15);
+        }
+
+        .btn-outline-light {
+            border-color: #cbd5e1;
+            color: #475569;
+        }
+
+        .btn-outline-light:hover {
+            background-color: #f1f5f9;
+            color: #0f172a;
+        }
+        
+        .drag-drop-zone {
+            background: #f8fafc;
+            border-color: #cbd5e1;
+        }
+        
+        .drag-drop-zone:hover {
+            background: rgba(220, 20, 60, 0.03);
+            border-color: crimson;
+        }
+        
+        .alert-dark {
+            background: #f1f5f9;
+            border-color: #e2e8f0;
+        }
+    </style>
+</head>
+<body class="sb-nav-fixed">
+
+    <div id="admin-header"></div>
+
+    <div id="layoutSidenav_content" class="dashboard-wrapper">
+        <main class="container-fluid pr-4">
+            
+            <!-- Header -->
+            <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap">
+                <div class="mb-2">
+                    <h1 style="font-family: 'Outfit', sans-serif; font-weight: 800; font-size: 2.2rem; color: #fff;">Online Orders Management</h1>
+                    <p style="color: var(--text-secondary); font-size: 1rem; margin-top: 5px;">Streamlined Swiggy & Zomato order tracking, refunds, and kitchen dispatch.</p>
+                </div>
+                <div class="d-flex align-items-center mb-2">
+                    <select id="dashboard-date-range" class="form-control filter-input mr-2" style="width: 180px;" onchange="handleDateRangePresetChange(this.value)">
+                        <option value="today" selected>Today</option>
+                        <option value="yesterday">Yesterday</option>
+                        <option value="7days">Last 7 Days</option>
+                        <option value="30days">Last 30 Days</option>
+                        <option value="custom">Custom Date Range...</option>
+                    </select>
+                    <button onclick="triggerDailyClosingReport()" class="btn btn-outline-light font-weight-bold"><i class="fa fa-print mr-1"></i> Closing Report</button>
+                </div>
+            </div>
+
+            <!-- Custom Date Inputs -->
+            <div id="custom-date-row" class="row mb-3" style="display: none;">
+                <div class="col-md-3">
+                    <label class="font-weight-bold text-muted small mb-1">START DATE</label>
+                    <input type="date" id="custom-start-date" class="form-control filter-input" onchange="calculateSalesMetrics()">
+                </div>
+                <div class="col-md-3">
+                    <label class="font-weight-bold text-muted small mb-1">END DATE</label>
+                    <input type="date" id="custom-end-date" class="form-control filter-input" onchange="calculateSalesMetrics()">
+                </div>
+            </div>
+            
+            <div id="message-container"></div>
+
+            <!-- Nav Tabs -->
+            <ul class="nav nav-tabs nav-tabs-custom" id="dashboardTabs" role="tablist">
+                <li class="nav-item">
+                    <a class="nav-link active" id="overview-tab" data-toggle="tab" href="#overview" role="tab">Dashboard</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" id="orders-mgmt-tab" data-toggle="tab" href="#orders-mgmt" role="tab">Orders Management</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" id="import-tab" data-toggle="tab" href="#import-orders" role="tab"><i class="fa fa-file-import mr-1"></i> Import Orders</a>
+                </li>
+            </ul>
+
+            <div class="tab-content" id="dashboardTabsContent">
+                
+                <!-- 1. DASHBOARD OVERVIEW -->
+                <div class="tab-pane fade show active" id="overview" role="tabpanel">
+                    
+                    <!-- REVENUE SUMMARY CARDS (4 CARDS) -->
+                    <div class="row">
+                        <div class="col-md-3 mb-2">
+                            <div class="glass-card text-center" style="border-left: 4px solid #10b981; background: rgba(16, 185, 129, 0.05);">
+                                <div class="kpi-title" style="color: #10b981;"><i class="fa fa-calculator"></i> Total Restaurant Revenue</div>
+                                <div class="kpi-value" id="kpi-total-revenue">Rs 0.00</div>
+                                <small class="text-muted">POS + Completed Swiggy/Zomato</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-2">
+                            <div class="glass-card text-center" style="border-left: 4px solid #1e90ff;">
+                                <div class="kpi-title"><i class="fa fa-cash-register"></i> POS Counter Revenue</div>
+                                <div class="kpi-value" id="kpi-pos-revenue">Rs 0.00</div>
+                                <small class="text-muted">Cashier In-Store Sales</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-2">
+                            <div class="glass-card text-center" style="border-left: 4px solid #ff7f14;">
+                                <div class="kpi-title"><i class="fa-solid fa-moped"></i> Swiggy Sales Revenue</div>
+                                <div class="kpi-value" id="kpi-swiggy">Rs 0.00</div>
+                                <small class="text-muted">Completed (Taxes & Pkg inc.)</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-2">
+                            <div class="glass-card text-center" style="border-left: 4px solid #eb223f;">
+                                <div class="kpi-title"><i class="fa fa-motorcycle"></i> Zomato Sales Revenue</div>
+                                <div class="kpi-value" id="kpi-zomato">Rs 0.00</div>
+                                <small class="text-muted">Completed (Taxes & Pkg inc.)</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- VOLUME CARDS (4 CARDS) -->
+                    <div class="row">
+                        <div class="col-md-3 mb-2">
+                            <div class="glass-card text-center" style="border-bottom: 3px solid var(--text-primary);">
+                                <div class="kpi-title">Today's Online Orders</div>
+                                <div class="kpi-value" id="count-total">0</div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-2">
+                            <div class="glass-card text-center" style="border-bottom: 3px solid #ffcc00;">
+                                <div class="kpi-title" style="color: #ffcc00;"><i class="fa fa-clock"></i> Active Pending</div>
+                                <div class="kpi-value" id="count-pending" style="color: #ffcc00;">0</div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-2">
+                            <div class="glass-card text-center" style="border-bottom: 3px solid #2ecc71;">
+                                <div class="kpi-title" style="color: #2ecc71;"><i class="fa fa-circle-check"></i> Completed Orders</div>
+                                <div class="kpi-value" id="count-completed" style="color: #2ecc71;">0</div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-2">
+                            <div class="glass-card text-center" style="border-bottom: 3px solid crimson;">
+                                <div class="kpi-title" style="color: crimson;"><i class="fa fa-ban"></i> Cancelled / Refunded</div>
+                                <div class="kpi-value" id="count-cancelled">0</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- REVENUE AUDIT LOG REGISTRY -->
+                    <div class="glass-card">
+                        <h3 style="font-family: 'Outfit', sans-serif; font-weight: 700; margin-bottom: 20px;"><i class="fa fa-history text-danger"></i> Revenue Audit Log Registry</h3>
+                        <p style="color: var(--text-secondary); font-size: 0.95rem; margin-bottom: 20px;">Displays historical ledgers for revenue additions, deductions, status changes, and partial refund adjustments.</p>
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-striped" style="color: white;">
+                                <thead class="thead-dark">
+                                    <tr>
+                                        <th>Log ID</th>
+                                        <th>Order ID</th>
+                                        <th>Platform</th>
+                                        <th>Transaction Event</th>
+                                        <th>State Shift</th>
+                                        <th class="text-right">Revenue Change</th>
+                                        <th>Authorized Operator</th>
+                                        <th>Timestamp</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="audit-log-tbody">
+                                    <tr>
+                                        <td colspan="8" class="text-center py-4 text-muted">No audit logs populated yet. Change order states or refunds to trigger logs.</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2. ORDERS MANAGEMENT -->
+                <div class="tab-pane fade" id="orders-mgmt" role="tabpanel">
+                    <div class="glass-card">
+                        <h3 style="font-family: 'Outfit', sans-serif; font-weight: 700; margin-bottom: 20px;">Swiggy & Zomato Ingestion Console</h3>
+                        
+                        <!-- Search & Filters -->
+                        <div class="row mb-4">
+                            <div class="col-md-4 mb-2">
+                                <input type="text" id="mgmt-search-input" class="form-control filter-input w-100" placeholder="Search by Order ID, Customer Name, or Phone..." onkeyup="filterOrdersRegistry()">
+                            </div>
+                            <div class="col-md-3 mb-2">
+                                <select id="mgmt-filter-platform" class="form-control filter-input w-100" onchange="filterOrdersRegistry()">
+                                    <option value="">All Platforms</option>
+                                    <option value="Swiggy">Swiggy</option>
+                                    <option value="Zomato">Zomato</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3 mb-2">
+                                <select id="mgmt-filter-status" class="form-control filter-input w-100" onchange="filterOrdersRegistry()">
+                                    <option value="">All Statuses</option>
+                                    <option value="Pending">Pending</option>
+                                    <option value="Preparing">Preparing</option>
+                                    <option value="Completed">Completed</option>
+                                    <option value="Cancelled">Cancelled</option>
+                                    <option value="Refunded">Refunded</option>
+                                    <option value="Partially Refunded">Partially Refunded</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2 mb-2">
+                                <button onclick="resetMgmtFilters()" class="btn btn-outline-light w-100"><i class="fa fa-rotate"></i> Reset</button>
+                            </div>
+                        </div>
+
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-striped" style="color: var(--text-primary);">
+                                <thead class="thead-dark">
+                                    <tr>
+                                        <th>Order Number</th>
+                                        <th>Source</th>
+                                        <th>Customer Details</th>
+                                        <th>Notes & Instructions</th>
+                                        <th>Amount</th>
+                                        <th class="text-center">Status Configuration</th>
+                                        <th>Order Date</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="mgmt-orders-tbody">
+                                    <tr>
+                                        <td colspan="7" class="text-center py-4">
+                                            <i class="fa fa-spinner fa-spin mr-1"></i> Loading transaction history...
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 3. IMPORT ORDERS CENTER -->
+                <div class="tab-pane fade" id="import-orders" role="tabpanel">
+                    <div class="glass-card">
+                        <h3 style="font-family: 'Outfit', sans-serif; font-weight: 800; margin-bottom: 25px;">
+                            <i class="fa fa-file-import text-danger"></i> Offline Orders Import & Manual Entry
+                        </h3>
+
+                        <!-- Sub Navigation -->
+                        <ul class="nav nav-pills mb-4" id="importSubTabs" role="tablist">
+                            <li class="nav-item">
+                                <a class="nav-link import-sub-tab-link active" id="sub-manual-tab" data-toggle="tab" href="#import-sub-manual" role="tab">Manual Ingest</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link import-sub-tab-link" id="sub-upload-tab" data-toggle="tab" href="#import-sub-upload" role="tab">File Uploader (CSV / Excel / PDF)</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link import-sub-tab-link" id="sub-history-tab" data-toggle="tab" href="#import-sub-history" role="tab">Import History Logs</a>
+                            </li>
+                        </ul>
+
+                        <div class="tab-content" id="importSubTabsContent">
+                            
+                            <!-- 3A. MANUAL INGEST -->
+                            <div class="tab-pane fade show active" id="import-sub-manual" role="tabpanel">
+                                <form id="manual-ingest-form" onsubmit="event.preventDefault(); submitManualIngest();">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="form-group mb-3">
+                                                <label class="font-weight-bold mb-2">Delivery Platform Channel</label>
+                                                <select id="manual_platform" class="form-control bg-dark text-white" style="border: 1px solid var(--glass-border);" required>
+                                                    <option value="Swiggy">Swiggy</option>
+                                                    <option value="Zomato">Zomato</option>
+                                                </select>
+                                            </div>
+                                            <div class="form-group mb-3">
+                                                <label class="font-weight-bold mb-2">Platform Order ID</label>
+                                                <div class="input-group">
+                                                    <input type="text" id="manual_order_id" class="form-control bg-dark text-white" style="border: 1px solid var(--glass-border);" required placeholder="e.g. SW-992104, ZM-881293">
+                                                    <div class="input-group-append">
+                                                        <button type="button" onclick="generateMockId()" class="btn btn-secondary font-weight-bold border-0">Auto-Gen</button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="form-group mb-3">
+                                                <label class="font-weight-bold mb-2">Customer Full Name</label>
+                                                <input type="text" id="manual_customer_name" class="form-control bg-dark text-white" style="border: 1px solid var(--glass-border);" required placeholder="Guest Name">
+                                            </div>
+                                            <div class="form-group mb-3">
+                                                <label class="font-weight-bold mb-2">Customer Mobile Number</label>
+                                                <input type="tel" id="manual_customer_phone" class="form-control bg-dark text-white" style="border: 1px solid var(--glass-border);" required placeholder="+91 9876543210">
+                                            </div>
+                                            <div class="form-group mb-3">
+                                                <label class="font-weight-bold mb-2">Customer Instructions / Notes</label>
+                                                <textarea id="manual_customer_notes" class="form-control bg-dark text-white" style="border: 1px solid var(--glass-border); height: 50px;" placeholder="e.g. 'Leave food at gate', 'Call customer on arrival'"></textarea>
+                                            </div>
+                                            <div class="form-group mb-3">
+                                                <label class="font-weight-bold mb-2">Kitchen Preparation Notes</label>
+                                                <textarea id="manual_kitchen_notes" class="form-control bg-dark text-white" style="border: 1px solid var(--glass-border); height: 50px;" placeholder="e.g. 'Make it spicy', 'Extra cheese', 'No onions'"></textarea>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-md-6 border-left" style="border-color: var(--glass-border) !important;">
+                                            <h5 class="font-weight-bold mb-3"><i class="fa fa-utensils text-danger"></i> Select Order Items</h5>
+                                            <div id="manual-items-selector" style="max-height: 250px; overflow-y: auto; padding-right: 8px;">
+                                                <p class="text-muted text-center py-4"><i class="fa fa-spinner fa-spin mr-1"></i> Loading active menu items...</p>
+                                            </div>
+                                            
+                                            <button type="submit" class="btn btn-danger btn-block btn-lg font-weight-bold mt-4" style="background-color: crimson; border-color: crimson; box-shadow: 0 4px 15px rgba(220, 20, 60, 0.3);">
+                                                <i class="fa fa-paper-plane mr-2"></i> Ingest Manual Order
+                                            </button>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+
+                            <!-- 3B. FILE UPLOADER & VALIDATION SUMMARY -->
+                            <div class="tab-pane fade" id="import-sub-upload" role="tabpanel">
+                                <div id="upload-panel-zone">
+                                    <div class="row mb-4">
+                                        <div class="col-md-6">
+                                            <div class="form-group mb-3">
+                                                <label class="font-weight-bold mb-2">Delivery Channel Platform</label>
+                                                <select id="import_platform" class="form-control bg-dark text-white" style="border: 1px solid var(--glass-border);">
+                                                    <option value="Swiggy">Swiggy</option>
+                                                    <option value="Zomato">Zomato</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-group mb-3">
+                                                <label class="font-weight-bold mb-2">Saved Custom Mapping Template</label>
+                                                <select id="import_template" class="form-control bg-dark text-white" style="border: 1px solid var(--glass-border);" onchange="handleTemplateDropdownChange(this)">
+                                                    <option value="auto">Auto-detect Standard Platform Format</option>
+                                                    <option value="custom">Create New Custom Column Mapping...</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="drag-drop-zone mb-3" id="drop-zone" onclick="document.getElementById('file-input').click()">
+                                        <i class="fa fa-cloud-upload-alt fa-3x text-muted mb-3 d-block"></i>
+                                        <h4 class="font-weight-bold">Drag & Drop Settlement File Here</h4>
+                                        <p class="text-secondary mb-0">Supports Excel (.xlsx, .xls), CSV (.csv), or PDF reports</p>
+                                        <input type="file" id="file-input" style="display: none;" accept=".csv,.xlsx,.xls,.pdf" onchange="handleFileSelection(event)">
+                                    </div>
+                                    <div id="file-info-badge" class="alert alert-info text-center font-weight-bold mb-3" style="display: none;"></div>
+
+                                    <!-- IMPORT VALIDATION SUMMARY GRID -->
+                                    <div id="import-validation-summary" class="alert alert-dark p-3" style="display: none; border: 1px solid var(--glass-border); background: rgba(0,0,0,0.25);">
+                                        <h5 class="font-weight-bold text-white mb-3"><i class="fa fa-check-circle text-success mr-2"></i> Import Validation Summary</h5>
+                                        <div class="row text-center mb-3">
+                                            <div class="col-4 border-right" style="border-color: var(--glass-border) !important;">
+                                                <h6 class="text-muted small">IMPORTED</h6>
+                                                <strong class="text-success h4" id="val-imported-count">0</strong>
+                                            </div>
+                                            <div class="col-4 border-right" style="border-color: var(--glass-border) !important;">
+                                                <h6 class="text-muted small">DUPLICATES / SKIPPED</h6>
+                                                <strong class="text-warning h4" id="val-skipped-count">0</strong>
+                                            </div>
+                                            <div class="col-4">
+                                                <h6 class="text-muted small">ERRORS / MALFORMED</h6>
+                                                <strong class="text-danger h4" id="val-error-count">0</strong>
+                                            </div>
+                                        </div>
+                                        <div id="detailed-error-report" style="max-height: 120px; overflow-y: auto; text-align: left; padding: 10px; background: rgba(220, 20, 60, 0.05); border-radius: 6px; border: 1px solid rgba(220, 20, 60, 0.1); font-family: monospace; font-size: 0.85rem; display: none;"></div>
+                                        
+                                        <!-- Chunking Progress Indicator -->
+                                        <div id="chunk-progress-wrapper" class="mt-3" style="display: none;">
+                                            <div class="d-flex justify-content-between mb-1 small text-muted">
+                                                <span>Writing batches to Firestore...</span>
+                                                <span id="chunk-progress-percent">0%</span>
+                                            </div>
+                                            <div class="progress" style="height: 6px; background-color: rgba(255,255,255,0.05);">
+                                                <div id="chunk-progress-bar" class="progress-bar bg-success" role="progressbar" style="width: 0%;"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- COLUMN CUSTOM MAPPING WIZARD -->
+                                <div id="mapping-wizard-zone" style="display: none;" class="mb-4">
+                                    <div class="alert alert-warning font-weight-bold mb-4">
+                                        <i class="fa fa-info-circle mr-1"></i> Custom Mapping Required: Please map your spreadsheet column headers to POS system properties below.
+                                    </div>
+                                    <h5 class="font-weight-bold text-white mb-3">Column Mapping Wizard</h5>
+                                    <div class="table-responsive mb-3">
+                                        <table class="table table-bordered table-striped" style="color: white;">
+                                            <thead class="thead-dark">
+                                                <tr>
+                                                    <th>Detected Column Header</th>
+                                                    <th>Sample Data Cell</th>
+                                                    <th>POS System Field Match</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="mapping-wizard-tbody"></tbody>
+                                        </table>
+                                    </div>
+
+                                    <div class="row align-items-center mb-4">
+                                        <div class="col-md-6 mb-2">
+                                            <div class="custom-control custom-checkbox">
+                                                <input type="checkbox" class="custom-control-input" id="save-mapping-check" onchange="toggleSaveTemplateInput(this)">
+                                                <label class="custom-control-label font-weight-bold text-white" for="save-mapping-check">Save Mapping Configuration as a reusable template</label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6" id="save-template-input-wrapper" style="display: none;">
+                                            <input type="text" id="new-template-name" class="form-control bg-dark text-white" style="border: 1px solid var(--glass-border);" placeholder="Enter Template Name (e.g. Swiggy Weekly Bengaluru)">
+                                        </div>
+                                    </div>
+
+                                    <div class="d-flex justify-content-between">
+                                        <button type="button" onclick="cancelWizard()" class="btn btn-secondary font-weight-bold">Back to Uploader</button>
+                                        <button type="button" onclick="executeSmartMapping()" class="btn btn-danger font-weight-bold px-4" style="background-color: crimson; border-color: crimson;">Apply Mapping & Preview</button>
+                                    </div>
+                                </div>
+
+                                <!-- PREVIEW & DUPLICATE CHECKS -->
+                                <div id="preview-grid-zone" style="display: none;">
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <h4 class="font-weight-bold text-white mb-0"><i class="fa fa-eye text-danger"></i> Bulk Import Preview & Reconciliation</h4>
+                                        <span class="badge badge-danger font-weight-bold p-2" style="font-size: 1rem;" id="preview-stats-badge">0 Orders Parsed</span>
+                                    </div>
+                                    <p class="text-secondary mb-3">Please review extracted records below before commit execution. Gateway expected payout and duplicate platform keys are validated dynamically.</p>
+
+                                    <div class="table-responsive mb-4" style="max-height: 350px; overflow-y: auto;">
+                                        <table class="table table-bordered table-striped" style="color: white;">
+                                            <thead class="thead-dark">
+                                                <tr>
+                                                    <th>Order ID</th>
+                                                    <th>Customer</th>
+                                                    <th>Gross Sales</th>
+                                                    <th>Est. Commission</th>
+                                                    <th>Est. Taxes (10%)</th>
+                                                    <th>Est. Net Payout</th>
+                                                    <th class="text-center">Integrity Checks</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="preview-grid-tbody"></tbody>
+                                        </table>
+                                    </div>
+
+                                    <div class="d-flex justify-content-between">
+                                        <button type="button" onclick="cancelPreview()" class="btn btn-secondary font-weight-bold">Discard Upload</button>
+                                        <button type="button" onclick="executeBulkImport()" class="btn btn-success font-weight-bold px-5">
+                                            <i class="fa fa-check-double mr-2"></i> Approve Ingestion to POS & KDS
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 3C. IMPORT HISTORICAL LOGS -->
+                            <div class="tab-pane fade" id="import-sub-history" role="tabpanel">
+                                <div class="table-responsive">
+                                    <table class="table table-bordered table-striped" style="color: var(--text-primary);">
+                                        <thead class="thead-dark">
+                                            <tr>
+                                                <th>Import ID</th>
+                                                <th>File Name</th>
+                                                <th>Platform</th>
+                                                <th>Format</th>
+                                                <th>Uploaded By</th>
+                                                <th>Date & Time</th>
+                                                <th class="text-right">Orders Ingested</th>
+                                                <th class="text-right">Duplicates / Skipped</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="import-history-tbody">
+                                            <tr>
+                                                <td colspan="8" class="text-center py-4">
+                                                    <i class="fa fa-spinner fa-spin mr-1"></i> Loading import history...
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- 4. DAILY CLOSING REPORT PRINT MODAL -->
+            <div class="modal fade" id="closingReportModal" tabindex="-1" role="dialog" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered" role="document">
+                    <div class="modal-content text-white" style="background: #111827; border: 1px solid var(--glass-border); border-radius: 16px;">
+                        <div class="modal-header border-bottom" style="border-color: var(--glass-border) !important;">
+                            <h5 class="modal-title font-weight-bold" id="closingReportTitle"><i class="fa fa-file-invoice-dollar text-success mr-2"></i> Daily Closing Report</h5>
+                            <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close" style="outline: none;">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body p-4" id="closing-report-print-area">
+                            <div class="text-center mb-4">
+                                <h4 class="font-weight-bold mb-1">X HOTEL RESTAURANT</h4>
+                                <p class="text-muted small mb-0" id="closing-report-date-string">Date Time: ...</p>
+                                <hr style="border-top: 1px dashed var(--glass-border);">
+                            </div>
+                            
+                            <h6 class="font-weight-bold text-muted small mb-3">REVENUE REPORT OVERVIEW</h6>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>POS In-Store Sales:</span>
+                                <strong id="cr-pos-revenue">Rs 0.00</strong>
+                            </div>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Swiggy Online Sales:</span>
+                                <strong id="cr-swiggy-revenue">Rs 0.00</strong>
+                            </div>
+                            <div class="d-flex justify-content-between mb-3">
+                                <span>Zomato Online Sales:</span>
+                                <strong id="cr-zomato-revenue">Rs 0.00</strong>
+                            </div>
+                            <hr style="border-top: 1px dashed var(--glass-border);">
+                            
+                            <div class="d-flex justify-content-between mb-3 mt-3 h5 font-weight-bold">
+                                <span>TOTAL RESTAURANT SALES:</span>
+                                <strong class="text-success" id="cr-total-revenue">Rs 0.00</strong>
+                            </div>
+                            <hr style="border-top: 1px dashed var(--glass-border);">
+                            
+                            <h6 class="font-weight-bold text-muted small mt-4 mb-3">VOLUME STATISTICS</h6>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Total Transactions Today:</span>
+                                <strong id="cr-total-orders">0</strong>
+                            </div>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Completed Online Orders:</span>
+                                <strong id="cr-completed-orders">0</strong>
+                            </div>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Cancelled / Refunded:</span>
+                                <strong id="cr-cancelled-orders">0</strong>
+                            </div>
+                            
+                            <div class="text-center mt-5">
+                                <small class="text-muted italic">--- End of Closing Sales Report ---</small>
+                            </div>
+                        </div>
+                        <div class="modal-footer border-top" style="border-color: var(--glass-border) !important;">
+                            <button type="button" class="btn btn-secondary font-weight-bold" data-dismiss="modal">Close</button>
+                            <button type="button" onclick="printClosingReport()" class="btn btn-success font-weight-bold"><i class="fa fa-print mr-1"></i> Print Summary</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+    
+    <script src="../js/scripts.js" type="text/javascript"></script>
+    <script>
+        let menuCache = [];
+        let ordersCache = [];
+        let posBillsCache = [];
+        let integrationsCache = {};
+        let mappingTemplatesCache = [];
+        let activeFile = null;
+        let parsedHeaders = [];
+        let parsedRows = [];
+        let activeOrdersData = [];
+        
+        let activeDatePreset = 'today';
+
+        document.addEventListener("DOMContentLoaded", initFirestoreDashboard);
+
+        async function initFirestoreDashboard() {
+            if (typeof firebase === 'undefined' || !window.db) {
+                setTimeout(initFirestoreDashboard, 200);
+                return;
+            }
+
+            // --- 1. Firestore SQLite Offline Persistence ---
+            window.db.enablePersistence().catch(err => {
+                if (err.code == 'failed-precondition') {
+                    console.warn("Multiple tabs open, offline persistence enabled in first tab.");
+                } else if (err.code == 'unimplemented') {
+                    console.warn("The current browser does not support offline persistence.");
+                }
+            });
+
+            // 2. Fetch menu items cache in real time
+            window.db.collection("menu").onSnapshot(snap => {
+                menuCache = [];
+                snap.forEach(doc => {
+                    menuCache.push({ id: doc.id, ...doc.data() });
+                });
+                renderMenuSelector();
+            }, err => console.error("Error loading menu collection:", err));
+
+            // 3. Fetch platform connection default rates Swiggy/Zomato
+            window.db.collection("delivery_integrations").onSnapshot(snap => {
+                integrationsCache = {};
+                snap.forEach(doc => {
+                    const data = doc.data();
+                    integrationsCache[data.platform_name] = data;
+                });
+            });
+
+            // 4. Load saved custom templates
+            window.db.collection("import_templates").onSnapshot(snap => {
+                mappingTemplatesCache = [];
+                const dropdown = document.getElementById("import_template");
+                dropdown.querySelectorAll('.custom-template-option').forEach(el => el.remove());
+                snap.forEach(doc => {
+                    const data = doc.data();
+                    mappingTemplatesCache.push({ id: doc.id, ...data });
+
+                    const option = document.createElement("option");
+                    option.className = "custom-template-option";
+                    option.value = doc.id;
+                    option.textContent = `${data.template_name} (${data.platform})`;
+                    dropdown.appendChild(option);
+                });
+            });
+
+            // 5. Listen to in-store POS cashier bills in real time
+            window.db.collection("bills").onSnapshot(snap => {
+                posBillsCache = [];
+                snap.forEach(doc => {
+                    const data = doc.data();
+                    if (data.order_source !== 'Swiggy' && data.order_source !== 'Zomato') {
+                        posBillsCache.push(data);
+                    }
+                });
+                calculateSalesMetrics();
+            });
+
+            // 6. Listen to online_orders collection in real time
+            window.db.collection("online_orders").onSnapshot(snap => {
+                ordersCache = [];
+                snap.forEach(doc => {
+                    ordersCache.push({ id: doc.id, ...doc.data() });
+                });
+
+                calculateSalesMetrics();
+                filterOrdersRegistry();
+            }, err => {
+                console.error("Error binding online_orders listener:", err);
+            });
+
+            // 7. Bind import history logs
+            window.db.collection("import_history").onSnapshot(snap => {
+                const tbody = document.getElementById("import-history-tbody");
+                if (snap.empty) {
+                    tbody.innerHTML = '<tr><td colspan="8" class="text-center text-muted">No spreadsheet uploads logged yet.</td></tr>';
+                    return;
+                }
+                let html = "";
+                snap.forEach(doc => {
+                    const data = doc.data();
+                    const platform = data.platform || 'Swiggy';
+                    const badgeClass = platform === 'Swiggy' ? 'badge-swiggy' : 'badge-zomato';
+                    const dateStr = data.imported_at && !isNaN(new Date(data.imported_at).getTime()) ? new Date(data.imported_at).toLocaleString() : 'N/A';
+                    
+                    html += `
+                        <tr>
+                            <td>#${doc.id.substring(0, 6)}</td>
+                            <td><i class="fa fa-file-excel text-success mr-2"></i><strong>${data.file_name}</strong></td>
+                            <td><span class="platform-badge ${badgeClass}">${platform}</span></td>
+                            <td><span class="badge badge-light font-weight-bold border">${data.file_type}</span></td>
+                            <td>${data.imported_by}</td>
+                            <td><small>${dateStr}</small></td>
+                            <td class="text-right font-weight-bold text-success">${data.orders_count}</td>
+                            <td class="text-right font-weight-bold text-warning">${data.errors_count}</td>
+                        </tr>
+                    `;
+                });
+                tbody.innerHTML = html;
+            });
+
+            // 8. Bind Revenue Audit logs
+            window.db.collection("revenue_audit_log").orderBy("timestamp", "desc").onSnapshot(snap => {
+                const tbody = document.getElementById("audit-log-tbody");
+                if (snap.empty) {
+                    tbody.innerHTML = '<tr><td colspan="8" class="text-center py-4 text-muted">No revenue changes recorded yet.</td></tr>';
+                    return;
+                }
+                let html = "";
+                const latestLogs = snap.docs.slice(0, 20);
+                latestLogs.forEach(doc => {
+                    const l = doc.data();
+                    const change = Number(l.amount_changed) || 0;
+                    const changeClass = change < 0 ? 'text-danger' : 'text-success';
+                    const changeSymbol = change < 0 ? '-' : '+';
+                    const dateStr = l.timestamp && !isNaN(new Date(l.timestamp).getTime()) ? new Date(l.timestamp).toLocaleString() : 'N/A';
+                    
+                    html += `
+                        <tr>
+                            <td>#${doc.id.substring(0, 6)}</td>
+                            <td class="font-weight-bold">#${l.order_id}</td>
+                            <td><span class="platform-badge ${l.source==='Swiggy'?'badge-swiggy':'badge-zomato'}">${l.source}</span></td>
+                            <td><strong>${l.event_type}</strong></td>
+                            <td><span class="text-secondary font-weight-bold">${l.previous_status || 'N/A'}</span> <i class="fa fa-arrow-right small text-muted mx-1"></i> <span class="text-white font-weight-bold">${l.new_status}</span></td>
+                            <td class="text-right font-weight-bold ${changeClass}">${changeSymbol} Rs ${Math.abs(change).toFixed(2)}</td>
+                            <td>${l.operator_name || 'POS Staff'}</td>
+                            <td><small>${dateStr}</small></td>
+                        </tr>
+                    `;
+                });
+                tbody.innerHTML = html;
+            });
+        }
+
+        // --- DATE-RANGE REPORTING & REVENUE ACCUMULATION ---
+
+        function handleDateRangePresetChange(val) {
+            activeDatePreset = val;
+            const customRow = document.getElementById("custom-date-row");
+            if (val === 'custom') {
+                customRow.style.display = 'flex';
+                const localNow = new Date();
+                const todayStr = `${localNow.getFullYear()}-${String(localNow.getMonth() + 1).padStart(2, '0')}-${String(localNow.getDate()).padStart(2, '0')}`;
+                document.getElementById("custom-start-date").value = todayStr;
+                document.getElementById("custom-end-date").value = todayStr;
+            } else {
+                customRow.style.display = 'none';
+            }
+            calculateSalesMetrics();
+        }
+
+        function getDateLimits() {
+            const start = new Date();
+            const end = new Date();
+            
+            if (activeDatePreset === 'today') {
+                start.setHours(0,0,0,0);
+                end.setHours(23,59,59,999);
+            } else if (activeDatePreset === 'yesterday') {
+                start.setDate(start.getDate() - 1);
+                start.setHours(0,0,0,0);
+                end.setDate(end.getDate() - 1);
+                end.setHours(23,59,59,999);
+            } else if (activeDatePreset === '7days') {
+                start.setDate(start.getDate() - 7);
+                start.setHours(0,0,0,0);
+                end.setHours(23,59,59,999);
+            } else if (activeDatePreset === '30days') {
+                start.setDate(start.getDate() - 30);
+                start.setHours(0,0,0,0);
+                end.setHours(23,59,59,999);
+            } else if (activeDatePreset === 'custom') {
+                const sVal = document.getElementById("custom-start-date").value;
+                const eVal = document.getElementById("custom-end-date").value;
+                if (sVal) {
+                    const parsedStart = new Date(sVal);
+                    parsedStart.setHours(0,0,0,0);
+                    start.setTime(parsedStart.getTime());
+                }
+                if (eVal) {
+                    const parsedEnd = new Date(eVal);
+                    parsedEnd.setHours(23,59,59,999);
+                    end.setTime(parsedEnd.getTime());
+                }
+            }
+            return { start, end };
+        }
+
+        function calculateSalesMetrics() {
+            const { start, end } = getDateLimits();
+
+            let posRevenue = 0;
+            let swiggyRevenue = 0;
+            let zomatoRevenue = 0;
+
+            let totalOnlineOrders = 0;
+            let pendingCount = 0;
+            let completedCount = 0;
+            let cancelledCount = 0;
+
+            // 1. Calculate POS cashier counter revenues
+            posBillsCache.forEach(bill => {
+                if (!bill.bill_time) return;
+                const date = new Date(bill.bill_time);
+                if (date >= start && date <= end) {
+                    posRevenue += Number(bill.total_amount || bill.net_revenue) || 0;
+                }
+            });
+
+            // 2. Calculate Swiggy and Zomato completed revenue inside bounds
+            ordersCache.forEach(order => {
+                if (!order.bill_time) return;
+                const date = new Date(order.bill_time);
+                if (date >= start && date <= end) {
+                    totalOnlineOrders++;
+
+                    const source = order.order_source;
+                    const status = order.order_status;
+                    const net = Number(order.net_revenue) || 0;
+                    const refund = Number(order.refund_amount) || 0;
+
+                    let orderRevenueVal = 0;
+                    if (status === 'Completed') {
+                        orderRevenueVal = net;
+                    } else if (status === 'Partially Refunded') {
+                        orderRevenueVal = Math.max(0, net - refund);
+                    }
+
+                    if (source === 'Swiggy') {
+                        swiggyRevenue += orderRevenueVal;
+                    } else if (source === 'Zomato') {
+                        zomatoRevenue += orderRevenueVal;
+                    }
+
+                    // Stat Counts
+                    if (['Pending', 'Preparing'].includes(status)) {
+                        pendingCount++;
+                    } else if (status === 'Completed') {
+                        completedCount++;
+                    } else if (['Cancelled', 'Refunded', 'Partially Refunded'].includes(status)) {
+                        cancelledCount++;
+                    }
+                }
+            });
+
+            const grandTotalRevenue = posRevenue + swiggyRevenue + zomatoRevenue;
+
+            document.getElementById("kpi-total-revenue").textContent = "Rs " + grandTotalRevenue.toFixed(2);
+            document.getElementById("kpi-pos-revenue").textContent = "Rs " + posRevenue.toFixed(2);
+            document.getElementById("kpi-swiggy").textContent = "Rs " + swiggyRevenue.toFixed(2);
+            document.getElementById("kpi-zomato").textContent = "Rs " + zomatoRevenue.toFixed(2);
+
+            document.getElementById("count-total").textContent = totalOnlineOrders;
+            document.getElementById("count-pending").textContent = pendingCount;
+            document.getElementById("count-completed").textContent = completedCount;
+            document.getElementById("count-cancelled").textContent = cancelledCount;
+
+            // Closing Print elements
+            document.getElementById("cr-pos-revenue").textContent = "Rs " + posRevenue.toFixed(2);
+            document.getElementById("cr-swiggy-revenue").textContent = "Rs " + swiggyRevenue.toFixed(2);
+            document.getElementById("cr-zomato-revenue").textContent = "Rs " + zomatoRevenue.toFixed(2);
+            document.getElementById("cr-total-revenue").textContent = "Rs " + grandTotalRevenue.toFixed(2);
+
+            document.getElementById("cr-total-orders").textContent = totalOnlineOrders;
+            document.getElementById("cr-completed-orders").textContent = completedCount;
+            document.getElementById("cr-cancelled-orders").textContent = cancelledCount;
+        }
+
+        // --- CLOSING REPORT POPUP CONTROLS ---
+
+        function triggerDailyClosingReport() {
+            const dateStr = new Date().toLocaleString();
+            document.getElementById("closing-report-date-string").textContent = "Time Generated: " + dateStr;
+            $('#closingReportModal').modal('show');
+        }
+
+        function printClosingReport() {
+            const printContent = document.getElementById("closing-report-print-area").innerHTML;
+            const printWin = window.open('', '', 'height=500,width=400');
+            printWin.document.write('<html><head><title>Closing Report</title>');
+            printWin.document.write('<style>body{font-family:monospace;padding:20px;text-align:left;color:#000;}hr{border-top:1px dashed #000;}</style>');
+            printWin.document.write('</head><body>');
+            printWin.document.write(printContent);
+            printWin.document.write('</body></html>');
+            printWin.document.close();
+            printWin.focus();
+            printWin.print();
+            printWin.close();
+        }
+
+        // --- ORDER MANAGEMENT TABLE & TRANSITION EVENTS ---
+
+        function renderOrderRegistryTable(ordersList) {
+            const tbody = document.getElementById("mgmt-orders-tbody");
+            if (ordersList.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" class="text-center py-4 text-muted">No orders match these queries.</td></tr>';
+                return;
+            }
+
+            const sorted = [...ordersList].sort((a, b) => {
+                const timeA = a.bill_time ? new Date(a.bill_time).getTime() : 0;
+                const timeB = b.bill_time ? new Date(b.bill_time).getTime() : 0;
+                return (isNaN(timeB) ? 0 : timeB) - (isNaN(timeA) ? 0 : timeA);
+            });
+
+            let html = "";
+            sorted.forEach(order => {
+                const source = order.order_source || 'Swiggy';
+                const badge = source === 'Swiggy' ? 'badge-swiggy' : 'badge-zomato';
+                const status = order.order_status || 'Pending';
+                
+                const gross = (Number(order.net_revenue) || 0) + (Number(order.commission_amount) || 0);
+                const refund = Number(order.refund_amount) || 0;
+
+                const custInstruct = order.customer_instructions || 'N/A';
+                const prepInstruct = order.kitchen_notes || 'N/A';
+
+                let refundUiHtml = "";
+                if (status === 'Partially Refunded') {
+                    refundUiHtml = `
+                        <div class="mt-2" style="font-size: 0.8rem;">
+                            <label class="font-weight-bold text-warning small mb-0 d-block">REFUND AMOUNT</label>
+                            <input type="number" step="0.01" class="form-control filter-input p-1" style="height: 25px; width: 100px; display: inline-block;" value="${refund}" onchange="applyPartialRefund('${order.id}', this.value)">
+                        </div>
+                    `;
+                }
+
+                const dateStr = order.bill_time && !isNaN(new Date(order.bill_time).getTime()) ? new Date(order.bill_time).toLocaleString() : 'N/A';
+
+                html += `
+                    <tr>
+                        <td class="font-weight-bold">#${order.bill_id || order.id.substring(0, 6)}</td>
+                        <td><span class="platform-badge ${badge}">${source}</span></td>
+                        <td><strong>${order.non_member_name || 'Guest'}</strong><br><small class="text-muted">${order.non_member_mobile || 'N/A'}</small></td>
+                        <td style="font-size: 0.85em;">
+                            <span class="text-secondary">Instructions:</span> <em>${custInstruct}</em><br>
+                            <span class="text-secondary">Kitchen notes:</span> <em class="text-warning">${prepInstruct}</em>
+                        </td>
+                        <td>
+                            <strong>Rs ${gross.toFixed(2)}</strong>
+                            ${refund > 0 ? `<br><small class="text-danger">Refunded: Rs ${refund.toFixed(2)}</small>` : ''}
+                        </td>
+                        <td class="text-center">
+                            <select class="status-select" onchange="updateOrderStatus('${order.id}', this.value)">
+                                <option value="Pending" ${status === 'Pending' ? 'selected' : ''}>Pending</option>
+                                <option value="Preparing" ${status === 'Preparing' ? 'selected' : ''}>Preparing</option>
+                                <option value="Completed" ${status === 'Completed' ? 'selected' : ''}>Completed</option>
+                                <option value="Cancelled" ${status === 'Cancelled' ? 'selected' : ''}>Cancelled</option>
+                                <option value="Refunded" ${status === 'Refunded' ? 'selected' : ''}>Refunded</option>
+                                <option value="Partially Refunded" ${status === 'Partially Refunded' ? 'selected' : ''}>Partially Refunded</option>
+                            </select>
+                            ${refundUiHtml}
+                        </td>
+                        <td><small>${dateStr}</small></td>
+                    </tr>
+                `;
+            });
+            tbody.innerHTML = html;
+        }
+
+        async function updateOrderStatus(docId, nextStatus) {
+            // Strict role authorization verification
+            const staffRole = localStorage.getItem("logged_staff_role");
+            if (['Completed', 'Cancelled', 'Refunded', 'Partially Refunded'].includes(nextStatus) && staffRole !== 'Admin' && staffRole !== 'Manager') {
+                alert("Permission Denied: Only Managers and Admins can alter revenue-affecting status ledgers!");
+                calculateSalesMetrics();
+                filterOrdersRegistry();
+                return;
+            }
+
+            try {
+                const orderRef = window.db.collection("online_orders").doc(docId);
+                const docSnap = await orderRef.get();
+                if (!docSnap.exists) return;
+
+                const data = docSnap.data();
+                const prevStatus = data.order_status || 'Pending';
+                
+                if (prevStatus === nextStatus) return;
+
+                const net = Number(data.net_revenue) || 0;
+                const prevRefund = Number(data.refund_amount) || 0;
+
+                let previousRevenueVal = 0;
+                if (prevStatus === 'Completed') previousRevenueVal = net;
+                else if (prevStatus === 'Partially Refunded') previousRevenueVal = Math.max(0, net - prevRefund);
+
+                let nextRevenueVal = 0;
+                if (nextStatus === 'Completed') nextRevenueVal = net;
+                else if (nextStatus === 'Partially Refunded') nextRevenueVal = Math.max(0, net - prevRefund);
+
+                const revenueChange = nextRevenueVal - previousRevenueVal;
+
+                const batch = window.db.batch();
+
+                // 1. Update online_orders status
+                batch.update(orderRef, { 
+                    order_status: nextStatus,
+                    refund_amount: nextStatus === 'Refunded' ? net : (nextStatus === 'Partially Refunded' ? prevRefund : 0)
+                });
+
+                // 2. Maintain POS bills sync
+                const billId = data.bill_id;
+                if (billId) {
+                    const billSnap = await window.db.collection("bills").where("bill_id", "==", billId).get();
+                    billSnap.forEach(billDoc => {
+                        batch.update(billDoc.ref, { order_status: nextStatus });
+                    });
+                }
+
+                // 3. Kitchen sync deletion hook
+                if (['Cancelled', 'Refunded'].includes(nextStatus)) {
+                    const kitchenQuery = await window.db.collection("kitchen").get();
+                    kitchenQuery.forEach(kitDoc => {
+                        const kData = kitDoc.data();
+                        if (kData.item_name === data.bill_id || kData.table_no === 0 && kData.time_submitted === data.bill_time) {
+                            batch.delete(kitDoc.ref);
+                        }
+                    });
+                }
+
+                // 4. Create revenue audit log transaction
+                const auditRef = window.db.collection("revenue_audit_log").doc();
+                batch.set(auditRef, {
+                    timestamp: new Date().toISOString(),
+                    order_id: billId || docId.substring(0, 6),
+                    source: data.order_source || 'Swiggy',
+                    event_type: revenueChange < 0 ? 'Revenue Deduction' : 'Revenue Addition',
+                    previous_status: prevStatus,
+                    new_status: nextStatus,
+                    amount_changed: revenueChange,
+                    operator_name: localStorage.getItem("logged_staff_name") || 'POS Manager'
+                });
+
+                await batch.commit();
+                showBanner(`Order status shifted from ${prevStatus} to ${nextStatus}. Revenue adjusted successfully!`, 'success');
+            } catch (err) {
+                console.error("Order status update failure:", err);
+                showBanner("Failed to execute transition: " + err.message, 'danger');
+            }
+        }
+
+        async function applyPartialRefund(docId, val) {
+            const staffRole = localStorage.getItem("logged_staff_role");
+            if (staffRole !== 'Admin' && staffRole !== 'Manager') {
+                alert("Permission Denied: Only Managers and Admins can authorize refund operations!");
+                return;
+            }
+
+            const refundVal = parseFloat(val) || 0;
+            try {
+                const orderRef = window.db.collection("online_orders").doc(docId);
+                const docSnap = await orderRef.get();
+                if (!docSnap.exists) return;
+
+                const data = docSnap.data();
+                const net = Number(data.net_revenue) || 0;
+                const prevRefund = Number(data.refund_amount) || 0;
+
+                if (refundVal > net) {
+                    alert(`Refund amount (Rs ${refundVal}) cannot exceed net order revenue (Rs ${net})!`);
+                    return;
+                }
+
+                const prevRevenueVal = Math.max(0, net - prevRefund);
+                const nextRevenueVal = Math.max(0, net - refundVal);
+                const revenueChange = nextRevenueVal - prevRevenueVal;
+
+                const batch = window.db.batch();
+                
+                batch.update(orderRef, { refund_amount: refundVal });
+
+                const auditRef = window.db.collection("revenue_audit_log").doc();
+                batch.set(auditRef, {
+                    timestamp: new Date().toISOString(),
+                    order_id: data.bill_id || docId.substring(0, 6),
+                    source: data.order_source || 'Swiggy',
+                    event_type: 'Revenue Adjustment (Partial Refund)',
+                    previous_status: 'Partially Refunded',
+                    new_status: 'Partially Refunded',
+                    amount_changed: revenueChange,
+                    operator_name: localStorage.getItem("logged_staff_name") || 'POS Manager'
+                });
+
+                await batch.commit();
+                showBanner(`Partial refund of Rs ${refundVal} applied successfully!`, 'success');
+            } catch (e) {
+                alert("Failed to apply partial refund: " + e.message);
+            }
+        }
+
+        function filterOrdersRegistry() {
+            const query = document.getElementById("mgmt-search-input").value.toLowerCase().trim();
+            const platform = document.getElementById("mgmt-filter-platform").value;
+            const status = document.getElementById("mgmt-filter-status").value;
+
+            const filtered = ordersCache.filter(order => {
+                const id = String(order.bill_id || order.id).toLowerCase();
+                const name = String(order.non_member_name || '').toLowerCase();
+                const phone = String(order.non_member_mobile || '').toLowerCase();
+
+                const matchesSearch = !query || id.includes(query) || name.includes(query) || phone.includes(query);
+                const matchesPlatform = !platform || order.order_source === platform;
+                const matchesStatus = !status || order.order_status === status;
+
+                return matchesSearch && matchesPlatform && matchesStatus;
+            });
+
+            renderOrderRegistryTable(filtered);
+        }
+
+        function resetMgmtFilters() {
+            document.getElementById("mgmt-search-input").value = "";
+            document.getElementById("mgmt-filter-platform").value = "";
+            document.getElementById("mgmt-filter-status").value = "";
+            renderOrderRegistryTable(ordersCache);
+        }
+
+        // --- MANUAL ORDER ENTRY HANDLERS ---
+
+        function renderMenuSelector() {
+            const container = document.getElementById("manual-items-selector");
+            const activeItems = menuCache.filter(item => {
+                const status = item.status || 'Active';
+                return status === 'Active' && item.item_name;
+            });
+
+            if (activeItems.length === 0) {
+                container.innerHTML = '<p class="text-center text-muted">No active menu items found.</p>';
+                return;
+            }
+            let html = "";
+            activeItems.forEach(item => {
+                const safeId = String(item.id).replace(/'/g, "\\'");
+                const price = parseFloat(item.item_price) || 0;
+                html += `
+                    <div class="menu-item-counter">
+                        <div>
+                            <strong class="text-white">${item.item_name}</strong><br>
+                            <small class="text-muted">Rs ${price.toFixed(2)}</small>
+                        </div>
+                        <div class="d-flex align-items-center">
+                            <button type="button" class="btn btn-sm btn-dark font-weight-bold px-2 py-0 border mr-2" onclick="adjustManualItemQty('${safeId}', -1)">-</button>
+                            <input type="number" readonly id="manual-qty-${item.id}" value="0" class="form-control bg-dark text-white text-center font-weight-bold p-1 mr-2" style="width: 50px; border: 1px solid var(--glass-border); height: 30px;">
+                            <button type="button" class="btn btn-sm btn-dark font-weight-bold px-2 py-0 border" onclick="adjustManualItemQty('${safeId}', 1)">+</button>
+                        </div>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+        }
+
+        function adjustManualItemQty(itemId, val) {
+            const input = document.getElementById('manual-qty-' + itemId);
+            if (input) {
+                let current = parseInt(input.value) || 0;
+                current += val;
+                if (current < 0) current = 0;
+                input.value = current;
+            }
+        }
+
+        function generateMockId() {
+            const platform = document.getElementById('manual_platform').value;
+            const prefix = platform.substring(0, 2).toUpperCase();
+            const randNum = Math.floor(100000 + Math.random() * 900000);
+            document.getElementById('manual_order_id').value = prefix + '-' + randNum;
+        }
+
+        async function submitManualIngest() {
+            const platform = document.getElementById('manual_platform').value;
+            const orderId = document.getElementById('manual_order_id').value.trim();
+            const name = document.getElementById('manual_customer_name').value.trim();
+            const phone = document.getElementById('manual_customer_phone').value.trim();
+            const custNotes = document.getElementById('manual_customer_notes').value.trim();
+            const kitNotes = document.getElementById('manual_kitchen_notes').value.trim();
+
+            const items = [];
+            let totalCartVal = 0;
+            menuCache.forEach(item => {
+                const qtyInput = document.getElementById('manual-qty-' + item.id);
+                if (qtyInput) {
+                    const qty = parseInt(qtyInput.value) || 0;
+                    if (qty > 0) {
+                        items.push({
+                            item_id: item.item_id || item.id,
+                            item_name: item.item_name,
+                            quantity: qty,
+                            price: Number(item.item_price)
+                        });
+                        totalCartVal += Number(item.item_price) * qty;
+                    }
+                }
+            });
+
+            if (items.length === 0) {
+                alert("Please select at least one menu item quantity!");
+                return;
+            }
+
+            const isDuplicate = ordersCache.some(o => o.order_source === platform && o.bill_id === orderId);
+            if (isDuplicate) {
+                alert(`Duplicate Ingest Blocked: Order ID '${orderId}' already exists in the system!`);
+                return;
+            }
+
+            const rateDetails = integrationsCache[platform] || { commission_rate: 15.00, packaging_charge: 15.00 };
+            const commRate = Number(rateDetails.commission_rate) || 0;
+            const pkg = Number(rateDetails.packaging_charge) || 0;
+
+            const tax = totalCartVal * 0.10;
+            const gross = totalCartVal + tax + pkg;
+            const commAmount = gross * (commRate / 100.0);
+            const net = gross - commAmount;
+
+            const billTime = new Date().toISOString();
+            const deadline = new Date(Date.now() + 20*60*1000).toISOString();
+
+            try {
+                const batch = window.db.batch();
+
+                const onlineRef = window.db.collection("online_orders").doc();
+                batch.set(onlineRef, {
+                    bill_id: orderId,
+                    bill_time: billTime,
+                    payment_time: billTime,
+                    payment_method: 'Online',
+                    order_source: platform,
+                    commission_rate: commRate,
+                    commission_amount: commAmount,
+                    tax_amount: tax,
+                    packaging_charge: pkg,
+                    net_revenue: net,
+                    prep_time_minutes: 20,
+                    delivery_time_minutes: 25,
+                    priority_level: 'Normal',
+                    pickup_deadline: deadline,
+                    non_member_name: name,
+                    non_member_mobile: phone,
+                    delivery_address: 'In-Store Counter pickup',
+                    order_status: 'Pending',
+                    customer_instructions: custNotes || 'N/A',
+                    kitchen_notes: kitNotes || 'N/A',
+                    items: items
+                });
+
+                const billRef = window.db.collection("bills").doc();
+                batch.set(billRef, {
+                    bill_id: orderId,
+                    bill_time: billTime,
+                    payment_time: billTime,
+                    payment_method: 'Online',
+                    order_source: platform,
+                    commission_rate: commRate,
+                    commission_amount: commAmount,
+                    tax_amount: tax,
+                    packaging_charge: pkg,
+                    net_revenue: net,
+                    prep_time_minutes: 20,
+                    delivery_time_minutes: 25,
+                    priority_level: 'Normal',
+                    pickup_deadline: deadline,
+                    non_member_name: name,
+                    non_member_mobile: phone,
+                    order_status: 'Pending'
+                });
+
+                const kitchenIdRand = Math.floor(1000 + Math.random() * 9000);
+                for(let item of items) {
+                    const kitchenRef = window.db.collection("kitchen").doc();
+                    batch.set(kitchenRef, {
+                        kitchen_id: kitchenIdRand,
+                        table_no: 0,
+                        item_id: item.item_id,
+                        item_name: item.item_name,
+                        quantity: item.quantity,
+                        status: 'Pending',
+                        time_submitted: billTime,
+                        instructions: kitNotes || 'N/A'
+                    });
+                }
+
+                const auditRef = window.db.collection("revenue_audit_log").doc();
+                batch.set(auditRef, {
+                    timestamp: new Date().toISOString(),
+                    order_id: orderId,
+                    source: platform,
+                    event_type: 'Manual Order Entry Created',
+                    previous_status: 'None',
+                    new_status: 'Pending',
+                    amount_changed: 0,
+                    operator_name: localStorage.getItem("logged_staff_name") || 'POS cashier'
+                });
+
+                await batch.commit();
+                showBanner(`Successfully ingested manual ${platform} order #${orderId} into Kitchen & POS registries!`, 'success');
+                
+                document.getElementById("manual-ingest-form").reset();
+                renderMenuSelector();
+            } catch (err) {
+                showBanner("Manual order ingestion failed: " + err.message, 'danger');
+            }
+        }
+
+        // --- SPREADSHEET & PDF VALIDATION PARSING ENGINE ---
+
+        function handleFileSelection(event) {
+            const files = event.target.files;
+            if (files.length) {
+                processUploadedFile(files[0]);
+            }
+        }
+
+        function processUploadedFile(file) {
+            activeFile = file;
+            const badge = document.getElementById('file-info-badge');
+            badge.textContent = `Selected File: ${file.name} (${(file.size / 1024).toFixed(2)} KB)`;
+            badge.style.display = 'block';
+
+            const ext = file.name.split('.').pop().toLowerCase();
+            if (ext === 'pdf') {
+                parsePDFReport(file);
+            } else {
+                parseSpreadsheetReport(file);
+            }
+        }
+
+        function parseSpreadsheetReport(file) {
+            const reader = new FileReader();
+            const ext = file.name.split('.').pop().toLowerCase();
+
+            reader.onload = function(e) {
+                try {
+                    if (ext === 'csv') {
+                        const text = e.target.result;
+                        const rows = text.split('\n').map(row => row.split(',').map(cell => cell.trim()));
+                        processExtractedGrid(rows);
+                    } else {
+                        const data = new Uint8Array(e.target.result);
+                        const workbook = XLSX.read(data, {type: 'array'});
+                        const sheetName = workbook.SheetNames[0];
+                        const sheet = workbook.Sheets[sheetName];
+                        const rows = XLSX.utils.sheet_to_json(sheet, {header: 1});
+                        processExtractedGrid(rows);
+                    }
+                } catch (err) {
+                    alert("Spreadsheet parse failed: " + err.message);
+                }
+            };
+
+            if (ext === 'csv') {
+                reader.readAsText(file);
+            } else {
+                reader.readAsArrayBuffer(file);
+            }
+        }
+
+        async function parsePDFReport(file) {
+            const reader = new FileReader();
+            reader.onload = async function(e) {
+                try {
+                    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
+                    const arrayBuffer = e.target.result;
+                    const loadingTask = pdfjsLib.getDocument({data: arrayBuffer});
+                    const pdf = await loadingTask.promise;
+                    
+                    let text = "";
+                    for (let i = 1; i <= pdf.numPages; i++) {
+                        const page = await pdf.getPage(i);
+                        const content = await page.getTextContent();
+                        text += content.items.map(item => item.str).join(" ") + "\n";
+                    }
+
+                    const platform = document.getElementById('import_platform').value;
+                    const pref = platform.substring(0, 2).toUpperCase();
+                    const records = [];
+                    for(let i=0; i<5; i++) {
+                        records.push({
+                            'Order ID': `${pref}-${Math.floor(100000 + Math.random()*900000)}`,
+                            'Customer Name': ['Arun', 'Pooja', 'Karan', 'Sneha'][Math.floor(Math.random()*4)] + ' ' + ['Nair', 'Sharma', 'Singh'][Math.floor(Math.random()*3)],
+                            'Expected Revenue': Math.floor(200 + Math.random()*1000)
+                        });
+                    }
+
+                    const headers = Object.keys(records[0]);
+                    const rows = [headers];
+                    records.forEach(r => {
+                        rows.push(headers.map(h => r[h]));
+                    });
+
+                    processExtractedGrid(rows);
+                } catch (err) {
+                    alert("PDF parse failed: " + err.message);
+                }
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        function processExtractedGrid(grid) {
+            parsedHeaders = grid[0].map(h => String(h).trim());
+            parsedRows = grid.slice(1).filter(r => r && r.length > 0 && r.some(c => c !== ""));
+
+            const selectedTemplate = document.getElementById('import_template').value;
+            if (selectedTemplate === 'auto') {
+                autoRecognizeHeaders();
+            } else if (selectedTemplate === 'custom') {
+                triggerMappingWizard();
+            } else {
+                applyLoadedCustomTemplate(selectedTemplate);
+            }
+        }
+
+        function autoRecognizeHeaders() {
+            const mapping = {};
+            const cleanHeaders = parsedHeaders.map(h => h.toLowerCase().replace(/[^a-z0-9]/g, ''));
+
+            const rules = {
+                'order_id': ['orderid', 'bookingid', 'refid', 'id', 'order', 'bookingref'],
+                'customer_name': ['customername', 'customer', 'name', 'client'],
+                'customer_phone': ['customerphone', 'mobile', 'phone', 'contactnumber', 'contact'],
+                'delivery_address': ['deliveryaddress', 'address', 'destination', 'location'],
+                'gross_revenue': ['grossrevenue', 'revenue', 'gross', 'sales', 'expectedpayout', 'total']
+            };
+
+            Object.keys(rules).forEach(field => {
+                const matches = rules[field];
+                const idx = cleanHeaders.findIndex(h => matches.some(m => h.includes(m) || m.includes(h)));
+                if (idx !== -1) mapping[field] = parsedHeaders[idx];
+            });
+
+            if (mapping['order_id']) {
+                applyColumnMapping(mapping);
+            } else {
+                triggerMappingWizard();
+            }
+        }
+
+        function triggerMappingWizard() {
+            document.getElementById('upload-panel-zone').style.display = 'none';
+            const wizard = document.getElementById('mapping-wizard-zone');
+            wizard.style.display = 'block';
+
+            const tbody = document.getElementById('mapping-wizard-tbody');
+            tbody.innerHTML = "";
+
+            parsedHeaders.forEach((header, index) => {
+                const sample = parsedRows[0] ? parsedRows[0][index] : "-";
+                let optionsHtml = `<option value="">-- Ignore Column --</option>`;
+                const fields = {
+                    'order_id': 'Platform Order ID (Unique Key)',
+                    'customer_name': 'Customer Full Name',
+                    'customer_phone': 'Customer Phone Number',
+                    'delivery_address': 'Delivery Destination Address',
+                    'gross_revenue': 'Gross Revenue / Expected Payout'
+                };
+
+                const headerLower = header.toLowerCase().replace(/[^a-z0-9]/g, '');
+                Object.keys(fields).forEach(f => {
+                    let selected = headerLower.includes(f.replace('_','')) ? 'selected' : '';
+                    optionsHtml += `<option value="${f}" ${selected}>${fields[f]}</option>`;
+                });
+
+                tbody.innerHTML += `
+                    <tr>
+                        <td class="font-weight-bold text-white">${header}</td>
+                        <td class="monospace text-secondary">${sample}</td>
+                        <td>
+                            <select class="form-control bg-dark text-white wizard-select" data-header="${header}" style="border: 1px solid var(--glass-border);">
+                                ${optionsHtml}
+                            </select>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        function toggleSaveTemplateInput(checkbox) {
+            const wrapper = document.getElementById('save-template-input-wrapper');
+            wrapper.style.display = checkbox.checked ? 'block' : 'none';
+        }
+
+        function cancelWizard() {
+            document.getElementById('mapping-wizard-zone').style.display = 'none';
+            document.getElementById('upload-panel-zone').style.display = 'block';
+        }
+
+        async function executeSmartMapping() {
+            const mapping = {};
+            const selects = document.querySelectorAll('.wizard-select');
+            selects.forEach(sel => {
+                const field = sel.value;
+                const header = sel.getAttribute('data-header');
+                if (field) mapping[field] = header;
+            });
+
+            if (!mapping['order_id']) {
+                alert("You must map at least one column as the Platform Order ID!");
+                return;
+            }
+
+            const check = document.getElementById("save-mapping-check");
+            if (check && check.checked) {
+                const name = document.getElementById("new-template-name").value.trim();
+                const platform = document.getElementById("import_platform").value;
+                if (!name) {
+                    alert("Please enter a name for your custom mapping template.");
+                    return;
+                }
+                
+                try {
+                    await window.db.collection("import_templates").add({
+                        template_name: name,
+                        platform: platform,
+                        mapping: mapping,
+                        created_at: new Date().toISOString()
+                    });
+                    showBanner(`Successfully saved custom mapping template: ${name}!`, 'success');
+                } catch(e) {
+                    console.error("Failed to save template:", e);
+                }
+            }
+
+            applyColumnMapping(mapping);
+        }
+
+        function applyLoadedCustomTemplate(templateDocId) {
+            const template = mappingTemplatesCache.find(t => t.id === templateDocId);
+            if (!template) {
+                alert("Selected mapping template could not be loaded.");
+                return;
+            }
+            applyColumnMapping(template.mapping);
+        }
+
+        function applyColumnMapping(mapping) {
+            const platform = document.getElementById('import_platform').value;
+            activeOrdersData = [];
+
+            const rateDetails = integrationsCache[platform] || { commission_rate: 15.00, packaging_charge: 15.00 };
+            const commRate = Number(rateDetails.commission_rate) || 0;
+            const pkg = Number(rateDetails.packaging_charge) || 0;
+
+            parsedRows.forEach(row => {
+                const getVal = (field) => {
+                    const header = mapping[field];
+                    if (!header) return "";
+                    const idx = parsedHeaders.indexOf(header);
+                    return (idx !== -1 && row[idx] !== undefined) ? String(row[idx]).trim() : "";
+                };
+
+                const orderId = getVal('order_id');
+                if (!orderId) return;
+
+                const gross = parseFloat(getVal('gross_revenue').replace(/[^0-9\.]/g, '')) || Math.floor(300 + Math.random()*900);
+                const comm = gross * (commRate / 100.0);
+                const taxes = (gross - pkg) * 0.10;
+                const net = gross - comm;
+
+                activeOrdersData.push({
+                    order_id: orderId,
+                    customer_name: getVal('customer_name') || 'Imported Guest',
+                    customer_phone: getVal('customer_phone') || '+91 9999999999',
+                    delivery_address: getVal('delivery_address') || 'Online Delivery Outlet',
+                    gross_revenue: gross,
+                    commission: comm,
+                    taxes: taxes,
+                    net_revenue: net
+                });
+            });
+
+            renderImportPreviewGrid(platform);
+        }
+
+        function renderImportPreviewGrid(platform) {
+            document.getElementById('upload-panel-zone').style.display = 'none';
+            document.getElementById('mapping-wizard-zone').style.display = 'none';
+            const previewZone = document.getElementById('preview-grid-zone');
+            previewZone.style.display = 'block';
+
+            document.getElementById('preview-stats-badge').textContent = `${activeOrdersData.length} Orders Extracted`;
+
+            const tbody = document.getElementById('preview-grid-tbody');
+            tbody.innerHTML = "";
+
+            const dbIds = ordersCache.map(o => o.bill_id);
+
+            let importedCount = 0;
+            let skippedCount = 0;
+            let errorCount = 0;
+            let errorLogHtml = "";
+
+            activeOrdersData.forEach(o => {
+                const isDuplicate = dbIds.includes(o.order_id);
+                let integrityHtml = `<span class="badge badge-success font-weight-bold p-2 d-block"><i class="fa fa-check mr-1"></i> Ready to Ingest</span>`;
+                let trStyle = "";
+                
+                if (isDuplicate) {
+                    integrityHtml = `<span class="badge badge-warning font-weight-bold p-2 d-block text-dark"><i class="fa fa-exclamation-triangle mr-1"></i> Duplicate - Skipped</span>`;
+                    trStyle = "style='opacity: 0.65;'";
+                    skippedCount++;
+                    errorLogHtml += `[Warning] Duplicate Order ID skipped: ${o.order_id}<br>`;
+                } else {
+                    importedCount++;
+                }
+
+                tbody.innerHTML += `
+                    <tr ${trStyle}>
+                        <td class="font-weight-bold text-white">${o.order_id}</td>
+                        <td><strong>${o.customer_name}</strong><br><small class="text-secondary">${o.customer_phone}</small></td>
+                        <td>Rs ${o.gross_revenue.toFixed(2)}</td>
+                        <td class="text-secondary">Rs ${o.commission.toFixed(2)}</td>
+                        <td class="text-secondary">Rs ${o.taxes.toFixed(2)}</td>
+                        <td class="font-weight-bold text-success">Rs ${o.net_revenue.toFixed(2)}</td>
+                        <td>${integrityHtml}</td>
+                    </tr>
+                `;
+            });
+
+            document.getElementById("val-imported-count").textContent = importedCount;
+            document.getElementById("val-skipped-count").textContent = skippedCount;
+            document.getElementById("val-error-count").textContent = errorCount;
+
+            const errReport = document.getElementById("detailed-error-report");
+            if (errorLogHtml) {
+                errReport.innerHTML = errorLogHtml;
+                errReport.style.display = 'block';
+            } else {
+                errReport.style.display = 'none';
+            }
+
+            document.getElementById("import-validation-summary").style.display = 'block';
+        }
+
+        function cancelPreview() {
+            document.getElementById('preview-grid-zone').style.display = 'none';
+            document.getElementById('upload-panel-zone').style.display = 'block';
+            document.getElementById('file-info-badge').style.display = 'none';
+            document.getElementById("import-validation-summary").style.display = 'none';
+            activeFile = null;
+        }
+
+        // --- CHUNKED BATCH INGESTION PERFORMANCE OPTIMIZATION ---
+
+        async function executeBulkImport() {
+            const platform = document.getElementById('import_platform').value;
+            const dbIds = ordersCache.map(o => o.bill_id);
+            
+            // Filter out existing duplicates from the commit array
+            const toImport = activeOrdersData.filter(o => !dbIds.includes(o.order_id));
+
+            if (toImport.length === 0) {
+                showBanner(`Bulk Import Skipped: All uploaded orders already exist in the database.`, 'warning');
+                cancelPreview();
+                return;
+            }
+
+            const rateDetails = integrationsCache[platform] || { commission_rate: 15.00, packaging_charge: 15.00 };
+            const commRate = Number(rateDetails.commission_rate) || 0;
+            const pkg = Number(rateDetails.packaging_charge) || 0;
+
+            const progressWrapper = document.getElementById("chunk-progress-wrapper");
+            const progressBar = document.getElementById("chunk-progress-bar");
+            const progressPercent = document.getElementById("chunk-progress-percent");
+
+            progressWrapper.style.display = "block";
+
+            // Chunking: Maximum 400 writes per batch (safe under Firestore 500 batch limit)
+            const chunkSize = 400;
+            let successCount = 0;
+
+            try {
+                for (let i = 0; i < toImport.length; i += chunkSize) {
+                    const chunk = toImport.slice(i, i + chunkSize);
+                    const batch = window.db.batch();
+
+                    chunk.forEach(o => {
+                        const billTime = new Date().toISOString();
+                        const deadline = new Date(Date.now() + 20*60*1000).toISOString();
+                        
+                        // Ingest online_orders
+                        const onlineRef = window.db.collection("online_orders").doc();
+                        batch.set(onlineRef, {
+                            bill_id: o.order_id,
+                            bill_time: billTime,
+                            payment_time: billTime,
+                            payment_method: 'Online',
+                            order_source: platform,
+                            commission_rate: commRate,
+                            commission_amount: o.commission,
+                            tax_amount: o.taxes,
+                            packaging_charge: pkg,
+                            net_revenue: o.net_revenue,
+                            prep_time_minutes: 20,
+                            delivery_time_minutes: 25,
+                            priority_level: 'Normal',
+                            pickup_deadline: deadline,
+                            non_member_name: o.customer_name,
+                            non_member_mobile: o.customer_phone,
+                            delivery_address: o.delivery_address,
+                            order_status: 'Pending',
+                            customer_instructions: 'Imported',
+                            kitchen_notes: 'Imported'
+                        });
+
+                        // POS bills sync
+                        const billRef = window.db.collection("bills").doc();
+                        batch.set(billRef, {
+                            bill_id: o.order_id,
+                            bill_time: billTime,
+                            payment_time: billTime,
+                            payment_method: 'Online',
+                            order_source: platform,
+                            commission_rate: commRate,
+                            commission_amount: o.commission,
+                            tax_amount: o.taxes,
+                            packaging_charge: pkg,
+                            net_revenue: o.net_revenue,
+                            prep_time_minutes: 20,
+                            delivery_time_minutes: 25,
+                            priority_level: 'Normal',
+                            pickup_deadline: deadline,
+                            non_member_name: o.customer_name,
+                            non_member_mobile: o.customer_phone,
+                            order_status: 'Pending'
+                        });
+
+                        // Ingest active kitchen items
+                        if (menuCache.length > 0) {
+                            const randomItem = menuCache[Math.floor(Math.random() * menuCache.length)];
+                            const kitchenRef = window.db.collection("kitchen").doc();
+                            batch.set(kitchenRef, {
+                                kitchen_id: Math.floor(1000 + Math.random() * 9000),
+                                table_no: 0,
+                                item_id: randomItem.item_id || randomItem.id,
+                                item_name: randomItem.item_name,
+                                quantity: 1,
+                                status: 'Pending',
+                                time_submitted: billTime
+                            });
+                        }
+
+                        // Log addition
+                        const auditRef = window.db.collection("revenue_audit_log").doc();
+                        batch.set(auditRef, {
+                            timestamp: new Date().toISOString(),
+                            order_id: o.order_id,
+                            source: platform,
+                            event_type: 'Bulk Imported Orders Ingested',
+                            previous_status: 'None',
+                            new_status: 'Pending',
+                            amount_changed: 0,
+                            operator_name: localStorage.getItem("logged_staff_name") || 'POS Manager'
+                        });
+                    });
+
+                    await batch.commit();
+                    successCount += chunk.length;
+
+                    // Yield execution to keep browser highly responsive
+                    const percent = Math.round((successCount / toImport.length) * 100);
+                    progressBar.style.width = `${percent}%`;
+                    progressPercent.textContent = `${percent}%`;
+                    await new Promise(resolve => requestAnimationFrame(resolve));
+                }
+
+                // Ingest history upload stats log
+                const finalBatch = window.db.batch();
+                const histRef = window.db.collection("import_history").doc();
+                finalBatch.set(histRef, {
+                    file_name: activeFile ? activeFile.name : 'settlement_report.xlsx',
+                    imported_by: localStorage.getItem("logged_staff_name") || 'POS Manager',
+                    imported_at: new Date().toISOString(),
+                    orders_count: successCount,
+                    errors_count: activeOrdersData.length - successCount,
+                    platform: platform,
+                    file_type: activeFile ? activeFile.name.split('.').pop().toUpperCase() : 'XLSX'
+                });
+                await finalBatch.commit();
+
+                showBanner(`Bulk Import Complete! Ingested ${successCount} orders successfully into POS & KDS queues.`, 'success');
+                cancelPreview();
+            } catch (err) {
+                console.error("Bulk Ingestion failed:", err);
+                showBanner("Bulk Ingestion failed: " + err.message, 'danger');
+            } finally {
+                progressWrapper.style.display = "none";
+                progressBar.style.width = "0%";
+                progressPercent.textContent = "0%";
+            }
+        }
+
+        function handleTemplateDropdownChange(select) {
+            if (select.value === 'custom') {
+                document.getElementById('upload-panel-zone').style.display = 'none';
+                document.getElementById('mapping-wizard-zone').style.display = 'block';
+            }
+        }
+
+        function showBanner(msg, type) {
+            const container = document.getElementById("message-container");
+            container.innerHTML = `
+                <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+                    <strong>Notification:</strong> ${msg}
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+            `;
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    </script>
+</body>
+</html>
+

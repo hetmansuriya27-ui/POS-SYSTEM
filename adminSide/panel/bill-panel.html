@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <title>Search Bills Details - X Hotel Staff</title>
+    
+    <link href="../css/styles.css?v=1.4" rel="stylesheet" />
+    
+    <!-- Firebase SDK Compat CDN -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics-compat.js"></script>
+    <script src="../js/firebase-config.js"></script>
+
+    <script src="https://use.fontawesome.com/releases/v6.3.0/js/all.js" crossorigin="anonymous"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    
+    <script src="../js/admin-component-loader.js"></script>
+    <style>
+        .table-container {
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            padding: 20px;
+            margin-top: 20px;
+        }
+        .search-card {
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            border: 1px solid #e3e6f0;
+            padding: 20px;
+            margin-bottom: 25px;
+        }
+        .btn-dark {
+            background-color: #1C1427 !important;
+            border-color: #1C1427 !important;
+        }
+        .btn-dark:hover {
+            background-color: #2D1F3F !important;
+            border-color: #2D1F3F !important;
+        }
+        .badge-unpaid {
+            background-color: #ffc107;
+            color: #212529;
+            font-weight: 600;
+        }
+        .badge-paid {
+            background-color: #28a745;
+            color: white;
+            font-weight: 600;
+        }
+        .receipt-link {
+            transition: transform 0.2s ease-in-out;
+            font-size: 1.1em;
+        }
+        .receipt-link:hover {
+            transform: scale(1.2);
+            color: #28a745 !important;
+        }
+    </style>
+</head>
+<body class="sb-nav-fixed">
+
+    <!-- Admin Side Topnav & Sidebar Loader (Injected by admin-component-loader.js) -->
+    <div id="admin-header"></div>
+
+    <!-- Main Content Area -->
+    <div id="layoutSidenav_content" style="padding-top: 56px;">
+        <main>
+            <div class="container-fluid px-4 pt-4">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2 class="font-weight-bold mt-2" style="color: #1C1427;">
+                        <i class="fa fa-file-invoice-dollar mr-2" style="color: #1C1427;"></i> Search Bills Details
+                    </h2>
+                </div>
+
+                <div id="message-container"></div>
+
+                <!-- Search Card -->
+                <div class="card search-card">
+                    <form id="search-form" onsubmit="event.preventDefault(); filterBills();">
+                        <div class="row align-items-center">
+                            <div class="col-md-6 mb-2 mb-md-0">
+                                <label for="search-input" class="sr-only">Search query</label>
+                                <input type="text" id="search-input" class="form-control form-control-lg" placeholder="Enter Bill ID, Table ID, Card ID, Payment Method, Name/Phone">
+                            </div>
+                            <div class="col-md-3 col-6">
+                                <button type="submit" class="btn btn-dark btn-lg btn-block font-weight-bold">
+                                    <i class="fa fa-search mr-1"></i> Search
+                                </button>
+                            </div>
+                            <div class="col-md-3 col-6 text-right">
+                                <button type="button" onclick="clearSearch()" class="btn btn-light btn-lg btn-block font-weight-bold border">
+                                    Show All
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Bills List Table Container -->
+                <div class="table-container">
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-striped table-hover mb-0" id="bills-table">
+                            <thead class="thead-dark">
+                                <tr>
+                                    <th>Bill ID</th>
+                                    <th>Table ID</th>
+                                    <th>Customer / Mobile</th>
+                                    <th>Reservation ID</th>
+                                    <th>Card ID</th>
+                                    <th>Payment Method</th>
+                                    <th style="width: 14em;">Bill Time</th>
+                                    <th style="width: 14em;">Payment Time</th>
+                                    <th class="text-right">Total Amount</th>
+                                    <th class="text-center" style="width: 80px;">Receipt</th>
+                                    <th class="text-center" style="width: 80px;">Delete</th>
+                                </tr>
+                            </thead>
+                            <tbody id="bills-table-body">
+                                <tr>
+                                    <td colspan="12" class="text-center py-5">
+                                        <i class="fa fa-spinner fa-spin fa-2x mb-2 d-block text-muted"></i>
+                                        <span class="text-muted font-weight-bold">Connecting to bills database...</span>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="../js/scripts.js" type="text/javascript"></script>
+    <script>
+        let billsCache = [];
+
+        document.addEventListener("DOMContentLoaded", function () {
+            function initBillsDashboard() {
+                if (typeof firebase === 'undefined' || !window.db) {
+                    setTimeout(initBillsDashboard, 100);
+                    return;
+                }
+
+                // Listen to bills collection in real time
+                window.db.collection("bills")
+                    .onSnapshot(snapshot => {
+                        billsCache = [];
+                        snapshot.forEach(doc => {
+                            const data = doc.data();
+                            billsCache.push({
+                                id: doc.id,
+                                ...data
+                            });
+                        });
+
+                        // Sort client-side by bill_id descending to show latest first
+                        billsCache.sort((a, b) => {
+                            const idA = parseInt(a.bill_id) || 0;
+                            const idB = parseInt(b.bill_id) || 0;
+                            return idB - idA;
+                        });
+
+                        renderBills(billsCache);
+                    }, err => {
+                        console.error("Failed to fetch bills:", err);
+                        document.getElementById("bills-table-body").innerHTML = `
+                            <tr>
+                                <td colspan="11" class="text-center text-danger py-4 font-weight-bold">
+                                    <i class="fa fa-exclamation-triangle mr-2"></i> Error loading bills: ${err.message}
+                                </td>
+                            </tr>
+                        `;
+                    });
+            }
+
+            // Real-time instant search as user types
+            document.getElementById("search-input").addEventListener("input", filterBills);
+
+            initBillsDashboard();
+        });
+
+        function renderBills(bills) {
+            const tableBody = document.getElementById("bills-table-body");
+            if (bills.length === 0) {
+                tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="12" class="text-center text-muted py-4">
+                            <i class="fa fa-folder-open mr-2"></i> No records found.
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            let html = "";
+            bills.forEach(bill => {
+                const billId = bill.bill_id || bill.id;
+                const tableId = bill.table_id || "-";
+                const customerName = bill.non_member_name || "-";
+                const customerMobile = bill.non_member_mobile || "-";
+                const customerInfo = customerName !== "-" 
+                    ? `${customerName} <br><small class="text-muted">${customerMobile}</small>`
+                    : "-";
+                
+                const swiggyOrderId = bill.swiggy_order_id || "-";
+                const zomatoOrderId = bill.zomato_order_id || "-";
+                const reservationId = bill.reservation_id || "-";
+                const cardId = bill.card_id || "-";
+                const paymentMethod = bill.payment_method ? bill.payment_method.toUpperCase() : "-";
+                
+                const billTime = bill.bill_time ? new Date(bill.bill_time).toLocaleString() : "-";
+                let paymentTimeHtml = "";
+                if (bill.payment_time) {
+                    paymentTimeHtml = `<span class="badge badge-paid p-2 d-block"><i class="fa fa-check mr-1"></i> Paid: <br><small style="font-size: 0.9em;">${new Date(bill.payment_time).toLocaleString()}</small></span>`;
+                } else {
+                    paymentTimeHtml = `<span class="badge badge-unpaid p-2 d-block text-dark"><i class="fa fa-clock mr-1"></i> Unpaid</span>`;
+                }
+
+                const totalAmount = typeof bill.total_amount === 'number' ? bill.total_amount : 0;
+
+                html += `
+                    <tr>
+                        <td class="font-weight-bold text-dark">#${billId}</td>
+                        <td class="text-center font-weight-bold">Table ${tableId}</td>
+                        <td>${customerInfo}</td>
+                        <td>${reservationId}</td>
+                        <td>${cardId}</td>
+                        <td class="font-weight-bold text-secondary text-center">${paymentMethod}</td>
+                        <td><small class="text-dark">${billTime}</small></td>
+                        <td class="text-center">${paymentTimeHtml}</td>
+                        <td class="text-right font-weight-bold text-dark" style="font-size: 1.05em;">Rs ${totalAmount.toFixed(2)}</td>
+                        <td class="text-center align-middle">
+                            <a href="../posBackend/receipt.html?bill_id=${billId}" title="View Receipt" class="btn btn-sm btn-outline-dark receipt-link">
+                                <span class="fa fa-receipt text-black"></span>
+                            </a>
+                        </td>
+                        <td class="text-center align-middle">
+                            <button onclick="deleteBill('${bill.id || billId}')" class="btn btn-sm btn-danger text-white" title="Delete Bill">
+                                <span class="fa fa-trash"></span>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            tableBody.innerHTML = html;
+        }
+
+        async function deleteBill(billId) {
+            if (!confirm("Are you sure you want to permanently delete this bill? This action cannot be undone.")) {
+                return;
+            }
+            try {
+                await window.db.collection("bills").doc(billId).delete();
+                alert("Bill successfully deleted.");
+            } catch (err) {
+                console.error("Error deleting bill:", err);
+                alert("Error deleting bill: " + err.message);
+            }
+        }
+
+        function filterBills() {
+            const query = document.getElementById("search-input").value.trim().toLowerCase();
+            if (!query) {
+                renderBills(billsCache);
+                return;
+            }
+
+            const filtered = billsCache.filter(bill => {
+                const billId = (bill.bill_id || "").toLowerCase();
+                const tableId = String(bill.table_id || "").toLowerCase();
+                const cardId = (bill.card_id || "").toLowerCase();
+                const paymentMethod = (bill.payment_method || "").toLowerCase();
+                const customerName = (bill.non_member_name || "").toLowerCase();
+                const customerMobile = (bill.non_member_mobile || "").toLowerCase();
+
+                return billId.includes(query) ||
+                       tableId.includes(query) ||
+                       cardId.includes(query) ||
+                       paymentMethod.includes(query) ||
+                       customerName.includes(query) ||
+                       customerMobile.includes(query);
+            });
+
+            renderBills(filtered);
+        }
+
+        function clearSearch() {
+            document.getElementById("search-input").value = "";
+            renderBills(billsCache);
+        }
+    </script>
+</body>
+</html>
+

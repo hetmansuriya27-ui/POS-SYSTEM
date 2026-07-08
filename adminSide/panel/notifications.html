@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <title>Notifications - X Hotel Staff</title>
+    
+    <link href="../css/styles.css?v=1.4" rel="stylesheet" />
+    
+    <!-- Firebase SDK Compat CDN -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+    <script src="../js/firebase-config.js"></script>
+
+    <script src="https://use.fontawesome.com/releases/v6.3.0/js/all.js" crossorigin="anonymous"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    
+    <script src="../js/admin-component-loader.js"></script>
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap');
+
+        :root {
+            --primary: #DC2626;
+            --primary-glow: rgba(220, 38, 38, 0.15);
+            --secondary: #EF4444;
+            --success: #10B981;
+            --success-glow: rgba(16, 185, 129, 0.15);
+            --warning: #F59E0B;
+            --warning-glow: rgba(245, 158, 11, 0.15);
+            --danger: #EF4444;
+            --danger-glow: rgba(239, 68, 68, 0.15);
+            --bg-workspace: #F8FAFC;
+            --glass-panel: #FFFFFF;
+            --glass-border: rgba(0, 0, 0, 0.06);
+            --text-primary: #0F172A;
+            --text-secondary: #64748B;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-workspace);
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(220, 38, 38, 0.03) 0px, transparent 40%),
+                radial-gradient(at 100% 0%, rgba(245, 158, 11, 0.03) 0px, transparent 40%),
+                url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.008'/%3E%3C/svg%3E");
+            color: var(--text-primary);
+            min-height: 100vh;
+        }
+
+        /* Glassmorphism Workspace Panels */
+        .glass-card {
+            background: var(--glass-panel);
+            backdrop-filter: blur(25px) saturate(180%);
+            -webkit-backdrop-filter: blur(25px) saturate(180%);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .notification-item {
+            display: flex;
+            align-items: start;
+            gap: 16px;
+            padding: 20px;
+            border-bottom: 1px solid var(--glass-border);
+            transition: background-color 0.2s;
+        }
+
+        .notification-item:hover {
+            background-color: rgba(0, 0, 0, 0.01);
+        }
+
+        .notification-item:last-child {
+            border-bottom: none;
+        }
+
+        .notification-icon {
+            padding: 10px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1em;
+        }
+
+        .btn-clear {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 700;
+            background-color: transparent;
+            color: var(--text-secondary);
+            border: 1px solid var(--glass-border);
+            padding: 8px 20px;
+            border-radius: 12px;
+            transition: all 0.2s;
+        }
+
+        .btn-clear:hover {
+            color: var(--primary);
+            border-color: var(--primary);
+            background-color: var(--primary-glow);
+        }
+    </style>
+</head>
+<body class="sb-nav-fixed">
+
+    <div id="admin-header"></div>
+
+    <div id="layoutSidenav_content" style="padding-top: 56px;">
+        <main>
+            <div class="container-fluid px-4 pt-4">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2 class="font-weight-bold mt-2" style="font-family: 'Outfit', sans-serif; font-weight: 700;">
+                        <i class="fa fa-bell mr-2 text-primary"></i> Live Notifications
+                    </h2>
+                    <button type="button" class="btn-clear" onclick="clearAllNotifications()">
+                        <i class="fa fa-trash-can mr-2"></i> Clear Session Log
+                    </button>
+                </div>
+
+                <div class="glass-card mb-4" style="overflow: hidden;">
+                    <div id="notifications-list">
+                        <!-- Notifications will be rendered here -->
+                        <div class="text-center py-5">
+                            <i class="fa-solid fa-bell-slash text-muted mb-3 fa-2x"></i>
+                            <h5 class="text-muted font-weight-bold">No notifications logged in this session</h5>
+                            <p class="text-muted small mb-0">Notifications show up here in real-time. Logs are cleared once the tab is closed.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="../js/scripts.js" type="text/javascript"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            // Mark notifications as read on opening
+            sessionStorage.setItem("unread_notifications", "false");
+            
+            // Clear unread badge in navigation immediately if loaded
+            const badge = document.getElementById("navbar-notification-badge");
+            if (badge) badge.style.display = "none";
+
+            renderNotifications();
+
+            // Refresh UI if sessionStorage updates
+            window.addEventListener('storage', function(e) {
+                if (e.key === 'admin_notifications') {
+                    renderNotifications();
+                }
+            });
+            
+            // Local polling interval to check session storage for any changes made in this same tab window
+            setInterval(renderNotifications, 1000);
+        });
+
+        function renderNotifications() {
+            const listContainer = document.getElementById("notifications-list");
+            if (!listContainer) return;
+
+            const notifications = JSON.parse(sessionStorage.getItem("admin_notifications") || "[]");
+
+            if (notifications.length === 0) {
+                listContainer.innerHTML = `
+                    <div class="text-center py-5">
+                        <i class="fa-solid fa-bell-slash text-muted mb-3 fa-2x"></i>
+                        <h5 class="text-muted font-weight-bold">No notifications logged in this session</h5>
+                        <p class="text-muted small mb-0">Notifications show up here in real-time. Logs are cleared once the tab is closed.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = "";
+            notifications.forEach(item => {
+                let iconClass = "fa-solid fa-circle-info";
+                let iconColor = "rgba(59, 130, 246, 0.1)";
+                let textColor = "#2563EB";
+
+                if (item.message.toLowerCase().includes("occupied")) {
+                    iconClass = "fa-solid fa-triangle-exclamation";
+                    iconColor = "rgba(239, 68, 68, 0.1)";
+                    textColor = "#EF4444";
+                } else if (item.message.toLowerCase().includes("available") || item.message.toLowerCase().includes("free")) {
+                    iconClass = "fa-solid fa-circle-check";
+                    iconColor = "rgba(16, 185, 129, 0.1)";
+                    textColor = "#10B981";
+                } else if (item.message.toLowerCase().includes("reservation")) {
+                    iconClass = "fa-solid fa-calendar-days";
+                    iconColor = "rgba(245, 158, 11, 0.1)";
+                    textColor = "#F59E0B";
+                } else if (item.message.toLowerCase().includes("menu") || item.message.toLowerCase().includes("item")) {
+                    iconClass = "fa-solid fa-utensils";
+                    iconColor = "rgba(139, 92, 246, 0.1)";
+                    textColor = "#8B5CF6";
+                } else if (item.message.toLowerCase().includes("paid")) {
+                    iconClass = "fa-solid fa-cash-register";
+                    iconColor = "rgba(16, 185, 129, 0.1)";
+                    textColor = "#10B981";
+                } else if (item.message.toLowerCase().includes("deleted") || item.message.toLowerCase().includes("discarded") || item.message.toLowerCase().includes("cancelled")) {
+                    iconClass = "fa-solid fa-trash-can";
+                    iconColor = "rgba(239, 68, 68, 0.1)";
+                    textColor = "#EF4444";
+                } else if (item.message.toLowerCase().includes("kitchen")) {
+                    iconClass = "fa-solid fa-bowl-food";
+                    iconColor = "rgba(249, 115, 22, 0.1)";
+                    textColor = "#F97316";
+                } else if (item.message.toLowerCase().includes("online order")) {
+                    iconClass = "fa-solid fa-globe";
+                    iconColor = "rgba(6, 182, 212, 0.1)";
+                    textColor = "#06B6D4";
+                }
+
+                html += `
+                    <div class="notification-item">
+                        <div class="notification-icon" style="background: ${iconColor}; color: ${textColor};">
+                            <i class="${iconClass}"></i>
+                        </div>
+                        <div style="flex-grow: 1;">
+                            <div style="font-weight: 600; font-size: 0.95em; color: var(--text-primary); line-height: 1.4;">${item.message}</div>
+                            <div style="font-size: 0.8em; color: var(--text-secondary); margin-top: 4px; font-weight: 500;">
+                                <i class="fa-regular fa-clock mr-1"></i> ${item.time}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            listContainer.innerHTML = html;
+        }
+
+        function clearAllNotifications() {
+            if (confirm("Are you sure you want to clear the notification log for this session?")) {
+                sessionStorage.removeItem("admin_notifications");
+                sessionStorage.setItem("unread_notifications", "false");
+                renderNotifications();
+            }
+        }
+    </script>
+</body>
+</html>
+

@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <title>POS Checkout Receipt - X Hotel</title>
+    
+    <!-- Google Fonts & FontAwesome -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Courier+Prime&display=swap" rel="stylesheet">
+    <link href="../css/styles.css?v=1.4" rel="stylesheet" />
+    
+    <!-- Firebase SDK Compat CDN -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+    <script src="../js/firebase-config.js"></script>
+    <script src="../js/admin-component-loader.js"></script>
+
+    <script src="https://use.fontawesome.com/releases/v6.3.0/js/all.js" crossorigin="anonymous"></script>
+    
+    <style>
+        body {
+            background-color: #f3f4f6;
+            font-family: 'Inter', sans-serif;
+            color: #1f2937;
+        }
+        .receipt-card {
+            background: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+            max-width: 550px;
+            margin: 40px auto;
+            padding: 30px;
+            border: 1px solid #e5e7eb;
+        }
+        .restaurant-title {
+            font-family: 'Inter', sans-serif;
+            font-weight: 800;
+            font-size: 2rem;
+            letter-spacing: -0.05em;
+            color: #111827;
+            text-align: center;
+        }
+        .divider {
+            border-top: 2px dashed #d1d5db;
+            margin: 20px 0;
+        }
+        .monospace {
+            font-family: 'Courier Prime', 'Courier New', monospace;
+            font-size: 0.95em;
+        }
+        .table-items th {
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 0.8em;
+            letter-spacing: 0.05em;
+            color: #4b5563;
+            border-bottom: 2px solid #e5e7eb;
+        }
+        .table-items td {
+            font-size: 0.95em;
+            vertical-align: middle;
+        }
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 1em;
+        }
+        .grand-total {
+            font-size: 1.35em;
+            font-weight: 700;
+            color: #111827;
+            border-top: 2px solid #111827;
+            border-bottom: 2px solid #111827;
+            padding: 10px 0;
+            margin-top: 15px;
+        }
+        .action-buttons {
+            max-width: 550px;
+            margin: 0 auto 40px auto;
+            display: flex;
+            gap: 15px;
+        }
+        .btn-dark {
+            background-color: #111827 !important;
+            border-color: #111827 !important;
+            color: #fff !important;
+            font-weight: 600;
+        }
+        .btn-dark:hover {
+            background-color: #1f2937 !important;
+            border-color: #1f2937 !important;
+        }
+        
+        /* Barcode emulation */
+        .barcode {
+            font-family: 'Courier Prime', monospace;
+            text-align: center;
+            letter-spacing: 6px;
+            font-size: 1.1em;
+            color: #4b5563;
+            margin-top: 20px;
+        }
+
+        /* Print styles */
+        @media print {
+            body {
+                background-color: #ffffff;
+                color: #000000;
+                font-size: 12pt;
+            }
+            .receipt-card {
+                box-shadow: none;
+                border: none;
+                margin: 0;
+                padding: 0;
+                max-width: 100%;
+            }
+            .action-buttons {
+                display: none !important;
+            }
+            .no-print {
+                display: none !important;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container px-3">
+        <!-- Action Buttons -->
+        <div class="action-buttons pt-4 no-print">
+            <button onclick="window.history.back();" class="btn btn-outline-secondary px-4 py-2 font-weight-bold">
+                <i class="fa fa-arrow-left mr-2"></i> Back
+            </button>
+            <button onclick="window.print();" class="btn btn-dark px-4 py-2 font-weight-bold ml-auto">
+                <i class="fa fa-print mr-2"></i> Print Receipt
+            </button>
+        </div>
+
+        <!-- Receipt Card -->
+        <div class="receipt-card monospaced-content" id="receipt-content">
+            <div class="text-center py-5" id="loader">
+                <i class="fa fa-spinner fa-spin fa-2x text-muted mb-2"></i>
+                <h5 class="text-muted">Fetching receipt details...</h5>
+            </div>
+        </div>
+    </div>
+
+    <!-- Script to fetch and render receipt -->
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            function loadReceipt() {
+                if (typeof firebase === 'undefined' || !window.db) {
+                    setTimeout(loadReceipt, 100);
+                    return;
+                }
+
+                const urlParams = new URLSearchParams(window.location.search);
+                const billId = urlParams.get('bill_id');
+
+                if (!billId) {
+                    document.getElementById("receipt-content").innerHTML = `
+                        <div class="alert alert-danger text-center font-weight-bold" role="alert">
+                            <i class="fa fa-exclamation-triangle mr-2"></i> Error: No Bill ID specified in the URL!
+                        </div>
+                    `;
+                    return;
+                }
+
+                // Query bill doc from Firestore
+                fetchBillDetails(billId);
+            }
+
+            async function fetchBillDetails(billId) {
+                const container = document.getElementById("receipt-content");
+
+                try {
+                    let docRef = window.db.collection("bills").doc(billId);
+                    let doc = await docRef.get();
+
+                    if (!doc.exists) {
+                        // Fallback search
+                        const query = await window.db.collection("bills").where("bill_id", "==", billId).limit(1).get();
+                        if (!query.empty) {
+                            doc = query.docs[0];
+                        } else {
+                            container.innerHTML = `
+                                <div class="alert alert-danger text-center font-weight-bold" role="alert">
+                                    <i class="fa fa-exclamation-triangle mr-2"></i> Bill Reference #${billId} not found in the database.
+                                </div>
+                            `;
+                            return;
+                        }
+                    }
+
+                    const bill = doc.data();
+                    renderReceiptUI(bill, container);
+
+                } catch (err) {
+                    console.error("Error loading receipt:", err);
+                    container.innerHTML = `
+                        <div class="alert alert-danger text-center font-weight-bold" role="alert">
+                            <i class="fa fa-exclamation-triangle mr-2"></i> Error fetching bill details: ${err.message}
+                        </div>
+                    `;
+                }
+            }
+
+            function renderReceiptUI(bill, container) {
+                const billId = bill.bill_id || bill.id;
+                const tableId = bill.table_id || "-";
+                const staffId = bill.staff_id || "Self-Service";
+                const memberText = bill.order_source ? `Source: ${bill.order_source}` : "Source: Dine-In";
+                
+                const billTimeStr = bill.bill_time ? new Date(bill.bill_time).toLocaleString() : "-";
+                const paymentTimeStr = bill.payment_time ? new Date(bill.payment_time).toLocaleString() : "UNPAID";
+                
+                const customerName = bill.non_member_name || "";
+                const customerMobile = bill.non_member_mobile || "";
+                let customerInfoHtml = "";
+                if (customerName && customerMobile) {
+                    customerInfoHtml = `
+                        <div class="row monospace text-muted mb-1">
+                            <div class="col-12"><strong>Customer:</strong> ${customerName} | ${customerMobile}</div>
+                        </div>
+                    `;
+                }
+
+                const paymentMethod = bill.payment_method ? bill.payment_method.toUpperCase() : "N/A";
+                let cardLast4Html = "";
+                if (paymentMethod === "CARD") {
+                    let cardNo = bill.card_number || bill.card_id || "xxxx";
+                    let last4 = String(cardNo).slice(-4);
+                    cardLast4Html = `
+                        <div class="row monospace text-muted mb-1">
+                            <div class="col-12"><strong>Card Last 4 Digits:</strong> ${last4}</div>
+                        </div>
+                    `;
+                }
+
+                // Render Table Items
+                let itemsHtml = "";
+                let subtotal = 0;
+                const items = bill.items_ordered || [];
+
+                items.forEach(item => {
+                    const price = item.item_price || 0;
+                    const qty = item.quantity || 0;
+                    const total = price * qty;
+                    subtotal += total;
+
+                    itemsHtml += `
+                        <tr class="monospace">
+                            <td class="py-2 pr-2"><strong>${item.item_name}</strong></td>
+                            <td class="text-center py-2">Rs ${price.toFixed(2)}</td>
+                            <td class="text-center py-2">${qty}</td>
+                            <td class="text-right py-2">Rs ${total.toFixed(2)}</td>
+                        </tr>
+                    `;
+                });
+
+                if (items.length === 0) {
+                    itemsHtml = `
+                        <tr>
+                            <td colspan="4" class="text-center text-muted py-3">No items found in this bill.</td>
+                        </tr>
+                    `;
+                }
+
+                const taxRate = 0.10;
+                const taxAmount = subtotal * taxRate;
+                const grandTotal = subtotal + taxAmount;
+
+                container.innerHTML = `
+                    <!-- Header -->
+                    <div class="text-center mb-3">
+                        <div class="restaurant-title">X HOTEL</div>
+                        <p class="text-muted monospace mb-0" style="font-size: 0.85em;">
+                            Premium Fine Dining POS System<br>
+                            123 Luxury Avenue, Colombo, Sri Lanka<br>
+                            Tel: +94 11 234 5678
+                        </p>
+                    </div>
+
+                    <div class="divider"></div>
+
+                    <!-- Meta Details -->
+                    <div class="monospace text-muted mb-1">
+                        <div class="row">
+                            <div class="col-6"><strong>Receipt ID:</strong> #${billId}</div>
+                            <div class="col-6 text-right"><strong>Table ID:</strong> ${tableId}</div>
+                        </div>
+                    </div>
+                    <div class="monospace text-muted mb-1">
+                        <div class="row">
+                            <div class="col-6"><strong>Staff ID:</strong> ${staffId}</div>
+                            <div class="col-6 text-right"><strong>${memberText}</strong></div>
+                        </div>
+                    </div>
+                    <div class="monospace text-muted mb-1">
+                        <div class="row">
+                            <div class="col-12"><strong>Order Date:</strong> ${billTimeStr}</div>
+                        </div>
+                    </div>
+                    <div class="monospace text-muted mb-3">
+                        <div class="row">
+                            <div class="col-12"><strong>Payment Date:</strong> ${paymentTimeStr}</div>
+                        </div>
+                    </div>
+
+                    ${customerInfoHtml}
+
+                    <div class="monospace text-muted mb-3">
+                        <div class="row">
+                            <div class="col-12"><strong>Payment Method:</strong> ${paymentMethod}</div>
+                        </div>
+                    </div>
+                    ${cardLast4Html}
+
+                    <div class="divider"></div>
+
+                    <!-- Items Table -->
+                    <table class="table table-borderless table-items w-100 mb-4">
+                        <thead>
+                            <tr>
+                                <th class="pl-0">Item</th>
+                                <th class="text-center">Price</th>
+                                <th class="text-center">Qty</th>
+                                <th class="text-right pr-0">Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${itemsHtml}
+                        </tbody>
+                    </table>
+
+                    <div class="divider"></div>
+
+                    <!-- Totals Summary -->
+                    <div class="monospace text-right">
+                        <div class="summary-row">
+                            <span class="text-muted">Subtotal:</span>
+                            <span class="font-weight-bold">Rs ${subtotal.toFixed(2)}</span>
+                        </div>
+                        <div class="summary-row">
+                            <span class="text-muted">Tax (10%):</span>
+                            <span class="font-weight-bold">Rs ${taxAmount.toFixed(2)}</span>
+                        </div>
+                        <div class="summary-row grand-total">
+                            <span>GRAND TOTAL:</span>
+                            <span>Rs ${grandTotal.toFixed(2)}</span>
+                        </div>
+                    </div>
+
+                    <div class="divider"></div>
+
+                    <!-- Footer Message & Emulated Barcode -->
+                    <div class="text-center mt-4">
+                        <p class="mb-2 font-weight-bold" style="font-size: 0.9em; letter-spacing: 0.05em;">THANK YOU FOR DINING WITH US!</p>
+                        <p class="text-muted monospace" style="font-size: 0.8em; line-height: 1.4;">
+                            Feedback is welcome at guest@xhotel.com<br>
+                            Please retain this receipt for any loyalty point claims.
+                        </p>
+                        <div class="barcode mt-3">
+                            ||| | |||| | ||| | |||
+                            <br>
+                            <span style="font-size: 0.7em; letter-spacing: normal;">*BILL-${billId}*</span>
+                        </div>
+                    </div>
+                `;
+            }
+
+            loadReceipt();
+        });
+    </script>
+</body>
+</html>
+

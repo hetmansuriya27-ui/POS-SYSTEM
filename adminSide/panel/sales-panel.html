@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <title>Most Purchased Items - X Hotel Staff</title>
+    
+    <link href="../css/styles.css?v=1.4" rel="stylesheet" />
+    
+    <!-- Firebase SDK Compat CDN -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+    <script src="../js/firebase-config.js"></script>
+
+    <script src="https://use.fontawesome.com/releases/v6.3.0/js/all.js" crossorigin="anonymous"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <script src="../js/admin-component-loader.js"></script>
+    <style>
+        .report-container {
+            background: var(--glass-panel) !important;
+            backdrop-filter: blur(25px) saturate(180%) !important;
+            -webkit-backdrop-filter: blur(25px) saturate(180%) !important;
+            border: 1px solid var(--glass-border) !important;
+            border-radius: 20px !important;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4) !important;
+            color: var(--text-primary) !important;
+            padding: 25px;
+            margin-bottom: 25px;
+            min-height: 785px; /* Perfect height alignment with left side charts */
+        }
+        .chart-box {
+            background: var(--glass-panel) !important;
+            backdrop-filter: blur(25px) saturate(180%) !important;
+            -webkit-backdrop-filter: blur(25px) saturate(180%) !important;
+            border: 1px solid var(--glass-border) !important;
+            border-radius: 20px !important;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4) !important;
+            color: var(--text-primary) !important;
+            padding: 20px;
+            margin-bottom: 25px;
+            min-height: 380px;
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1) !important;
+        }
+        .chart-box:hover {
+            border-color: rgba(37, 99, 235, 0.25) !important;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5), 0 0 25px rgba(37, 99, 235, 0.08) !important;
+        }
+        .btn-outline-dark {
+            color: var(--text-secondary) !important;
+            border-color: var(--glass-border) !important;
+        }
+        .btn-outline-dark:hover, .btn-outline-dark.active {
+            background-color: var(--primary) !important;
+            border-color: var(--primary) !important;
+            color: white !important;
+            box-shadow: 0 4px 15px var(--primary-glow) !important;
+        }
+    </style>
+</head>
+<body class="sb-nav-fixed">
+
+    <div id="admin-header"></div>
+
+    <div id="layoutSidenav_content" style="padding-top: 56px;">
+        <main>
+            <div class="container-fluid px-4 pt-4">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2 class="font-weight-bold mt-2" style="color: var(--text-primary);">
+                        <i class="fa fa-fire mr-2" style="color: crimson;"></i> Most Purchased Items
+                    </h2>
+                    <h5 class="text-muted font-weight-bold" id="current-month-lbl">Month: ...</h5>
+                </div>
+
+                <div id="message-container"></div>
+
+                <!-- Sorting and Table Row -->
+                <div class="row">
+                    <!-- Left: Pie Charts Grid -->
+                    <div class="col-lg-7">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="chart-box text-center">
+                                    <h6 class="font-weight-bold text-white mb-3">Top 5 Items (Overall)</h6>
+                                    <div style="height: 280px; position: relative;">
+                                        <canvas id="overallChart"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="chart-box text-center">
+                                    <h6 class="font-weight-bold text-white mb-3">Top 5 Main Dishes</h6>
+                                    <div style="height: 280px; position: relative;">
+                                        <canvas id="mainChart"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="chart-box text-center">
+                                    <h6 class="font-weight-bold text-white mb-3">Top 5 Side Snacks</h6>
+                                    <div style="height: 280px; position: relative;">
+                                        <canvas id="sideChart"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="chart-box text-center">
+                                    <h6 class="font-weight-bold text-white mb-3">Top 5 Drinks</h6>
+                                    <div style="height: 280px; position: relative;">
+                                        <canvas id="drinksChart"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right: Item Units Table -->
+                    <div class="col-lg-5">
+                        <div class="report-container">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h5 class="font-weight-bold text-white mb-0">Sales Quantity Log</h5>
+                                <div class="btn-group btn-group-sm">
+                                    <button onclick="sortSales('desc')" class="btn btn-outline-dark font-weight-bold active" id="btn-sort-desc" style="border-radius: 12px 0 0 12px !important;">Most</button>
+                                    <button onclick="sortSales('asc')" class="btn btn-outline-dark font-weight-bold" id="btn-sort-asc" style="border-radius: 0 12px 12px 0 !important;">Least</button>
+                                </div>
+                            </div>
+                            
+                            <div class="table-responsive" style="max-height: 680px; overflow-y: auto;">
+                                <table class="table table-hover mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th>Item Name</th>
+                                            <th style="width: 100px;" class="text-right">Units Sold</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="sales-table-body">
+                                        <tr>
+                                            <td colspan="2" class="text-center py-5">
+                                                <i class="fa fa-spinner fa-spin fa-2x mb-2 d-block text-muted"></i>
+                                                <span class="text-muted font-weight-bold">Calculating sales logs...</span>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="../js/scripts.js" type="text/javascript"></script>
+    <script>
+        let paidBills = [];
+        let menuCategories = {}; // Cache map for item categories
+        let salesData = []; // [{ name, qty, category }]
+        let sortOrder = "desc";
+
+        let charts = {}; // references to chart instances
+
+        document.addEventListener("DOMContentLoaded", function () {
+            // Set header label
+            const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+            const curDate = new Date();
+            document.getElementById("current-month-lbl").textContent = `Month: ${months[curDate.getMonth()]} ${curDate.getFullYear()}`;
+
+            function initAnalytics() {
+                if (typeof firebase === 'undefined' || !window.db) {
+                    setTimeout(initAnalytics, 100);
+                    return;
+                }
+
+                // 1. Fetch menu cache to categorize items properly
+                window.db.collection("menu").get().then(menuSnapshot => {
+                    menuSnapshot.forEach(doc => {
+                        const d = doc.data();
+                        menuCategories[d.item_name] = d.item_category || "Main Dish";
+                    });
+
+                    // 2. Fetch paid bills
+                    fetchSales();
+                });
+            }
+
+            async function fetchSales() {
+                try {
+                    // Filter paid bills for the current month client-side
+                    const snap = await window.db.collection("bills")
+                        .where("payment_time", "!=", null)
+                        .get();
+
+                    paidBills = [];
+                    snap.forEach(doc => {
+                        paidBills.push(doc.data());
+                    });
+
+                    processSalesData();
+
+                } catch (err) {
+                    console.error("Error loading analytics:", err);
+                }
+            }
+
+            initAnalytics();
+        });
+
+        function processSalesData() {
+            const currentMonth = new Date().getMonth();
+            const currentYear = new Date().getFullYear();
+
+            // Accumulate units sold
+            const salesMap = {};
+
+            paidBills.forEach(bill => {
+                const payDate = new Date(bill.payment_time);
+                if (payDate.getMonth() === currentMonth && payDate.getFullYear() === currentYear) {
+                    const items = bill.items_ordered || [];
+                    items.forEach(item => {
+                        const name = item.item_name;
+                        const qty = parseInt(item.quantity) || 0;
+                        if (!salesMap[name]) {
+                            salesMap[name] = 0;
+                        }
+                        salesMap[name] += qty;
+                    });
+                }
+            });
+
+            // Convert to array
+            salesData = [];
+            for (const [name, qty] of Object.entries(salesMap)) {
+                salesData.push({
+                    name: name,
+                    qty: qty,
+                    category: menuCategories[name] || "Main Dish"
+                });
+            }
+
+            // Draw Charts & Table
+            updateView();
+        }
+
+        function updateView() {
+            // Sort Sales
+            sortSalesData();
+            
+            // Render Table
+            renderTable();
+
+            // Draw charts
+            drawCharts();
+        }
+
+        function sortSales(order) {
+            sortOrder = order;
+            document.getElementById("btn-sort-desc").classList.toggle("active", order === "desc");
+            document.getElementById("btn-sort-asc").classList.toggle("active", order === "asc");
+            sortSalesData();
+            renderTable();
+        }
+
+        function sortSalesData() {
+            salesData.sort((a, b) => {
+                return sortOrder === "desc" ? b.qty - a.qty : a.qty - b.qty;
+            });
+        }
+
+        function renderTable() {
+            const body = document.getElementById("sales-table-body");
+            if (salesData.length === 0) {
+                body.innerHTML = `
+                    <tr>
+                        <td colspan="2" class="text-center text-muted py-4">No item sales recorded this month.</td>
+                    </tr>
+                `;
+                return;
+            }
+
+            let html = "";
+            salesData.forEach(item => {
+                html += `
+                    <tr>
+                        <td class="font-weight-bold" style="color: var(--text-primary);">${item.name}</td>
+                        <td class="text-right font-weight-bold" style="color: var(--text-secondary); font-size: 1.05em;">${item.qty} units</td>
+                    </tr>
+                `;
+            });
+            body.innerHTML = html;
+        }
+
+        function drawCharts() {
+            // Group Top 5 for Overall, Main, Side, Drinks
+            const getTopFive = (items) => {
+                // sort temp descending for charts
+                const sorted = [...items].sort((a,b) => b.qty - a.qty);
+                return sorted.slice(0, 5);
+            };
+
+            const overall = getTopFive(salesData);
+            const mains = getTopFive(salesData.filter(i => i.category === "Main Dish"));
+            const sides = getTopFive(salesData.filter(i => i.category === "Side Snacks"));
+            const drinks = getTopFive(salesData.filter(i => i.category === "Drinks"));
+
+            renderChartInstance("overallChart", overall);
+            renderChartInstance("mainChart", mains);
+            renderChartInstance("sideChart", sides);
+            renderChartInstance("drinksChart", drinks);
+        }
+
+        function renderChartInstance(canvasId, topItems) {
+            if (charts[canvasId]) {
+                charts[canvasId].destroy();
+            }
+
+            const ctx = document.getElementById(canvasId).getContext('2d');
+
+            if (topItems.length === 0) {
+                // Draw empty placeholder
+                ctx.font = "14px Inter";
+                ctx.fillStyle = "#888";
+                ctx.textAlign = "center";
+                ctx.fillText("No sales records", 140, 140);
+                return;
+            }
+
+            const labels = topItems.map(i => i.name);
+            const data = topItems.map(i => i.qty);
+
+            charts[canvasId] = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: data,
+                        backgroundColor: [
+                            '#2563EB', /* Vibrant Blue */
+                            '#4F46E5', /* Indigo */
+                            '#10B981', /* Emerald */
+                            '#F59E0B', /* Amber */
+                            '#EF4444'  /* Crimson */
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false /* Hide legendary for responsive cards */
+                        }
+                    }
+                }
+            });
+        }
+
+        // Real-time Theme Change Reactive Listener
+        window.addEventListener("themeChanged", () => {
+            if (typeof processSalesData === "function") {
+                processSalesData();
+            }
+        });
+    </script>
+</body>
+</html>
+

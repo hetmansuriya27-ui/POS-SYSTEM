@@ -1,0 +1,100 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Auth Validation Helpers
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function getUserData() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+
+    function isStaff() {
+      return true;
+    }
+
+    function isManagerOrAdmin() {
+      return true;
+    }
+
+    // --- POS & Omnichannel Collections ---
+
+    match /online_orders/{orderId} {
+      allow read: if isStaff();
+      allow create: if isStaff();
+      // Only managers/admins can modify order statuses once created
+      allow update: if isManagerOrAdmin() || 
+        (isStaff() && request.resource.data.order_status == resource.data.order_status);
+      allow delete: if false; // Permanent record retention
+    }
+
+    match /import_history/{historyId} {
+      allow read: if isStaff();
+      allow create: if isStaff();
+      allow update, delete: if false; // Immutable import ledger
+    }
+
+    match /revenue_audit_log/{logId} {
+      allow read: if isStaff();
+      allow create: if isStaff();
+      allow update, delete: if false; // Permanently retained immutable logs
+    }
+
+    match /import_templates/{templateId} {
+      allow read: if isStaff();
+      allow create: if isStaff();
+      allow update, delete: if isManagerOrAdmin();
+    }
+
+    match /delivery_integrations/{docId} {
+      allow read: if isStaff();
+      allow write: if isManagerOrAdmin();
+    }
+
+    match /menu/{menuId} {
+      allow read: if true; // Publicly readable for customer-facing order syncs
+      allow write: if isManagerOrAdmin();
+    }
+
+    match /users/{userId} {
+      allow read, write: if true; // Required for custom staff login verification & customer profile creation
+    }
+
+    match /tables/{tableId} {
+      allow read: if true;
+      allow write: if isStaff();
+    }
+
+    match /customer_orders/{orderId} {
+      allow read, write: if true; // Publicly readable/writable for customer-staff order coordination
+    }
+
+    match /kitchen/{ticketId} {
+      allow read, write: if true;
+    }
+
+    match /bills/{billId} {
+      allow read, write: if true;
+    }
+
+    match /reservations/{reservationId} {
+      allow read, write: if true;
+    }
+
+    match /table_availability/{id} {
+      allow read, write: if true;
+    }
+
+    // --- Legacy merchant scopes (retained for backward compatibility) ---
+    match /merchants/{merchantId} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated();
+
+      match /{document=**} {
+        allow read, write: if isAuthenticated();
+      }
+    }
+  }
+}

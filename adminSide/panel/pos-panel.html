@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <title>POS Dashboard - X Hotel Staff</title>
+    
+    <link href="../css/styles.css?v=1.4" rel="stylesheet" />
+    <link href="../css/pos.css" rel="stylesheet" />
+    
+    <!-- Firebase SDK Compat CDN -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+    <script src="../js/firebase-config.js"></script>
+
+    <script src="https://use.fontawesome.com/releases/v6.3.0/js/all.js" crossorigin="anonymous"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    
+    <script src="../js/admin-component-loader.js"></script>
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap');
+
+        :root {
+            --primary: #DC2626;
+            --primary-glow: rgba(220, 38, 38, 0.15);
+            --secondary: #EF4444;
+            --success: #10B981;
+            --success-glow: rgba(16, 185, 129, 0.15);
+            --warning: #F59E0B;
+            --warning-glow: rgba(245, 158, 11, 0.15);
+            --danger: #EF4444;
+            --danger-glow: rgba(239, 68, 68, 0.15);
+            --bg-workspace: #F8FAFC;
+            --glass-panel: #FFFFFF;
+            --glass-border: rgba(0, 0, 0, 0.06);
+            --text-primary: #0F172A;
+            --text-secondary: #64748B;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-workspace);
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(220, 38, 38, 0.03) 0px, transparent 40%),
+                radial-gradient(at 100% 0%, rgba(245, 158, 11, 0.03) 0px, transparent 40%),
+                url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.008'/%3E%3C/svg%3E");
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Ambient Glowing Accents */
+        .ambient-glow-1 {
+            position: absolute;
+            top: 20%;
+            left: 10%;
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(37, 99, 235, 0.08) 0%, transparent 70%);
+            z-index: 0;
+            pointer-events: none;
+            filter: blur(60px);
+        }
+
+        .ambient-glow-2 {
+            position: absolute;
+            bottom: 10%;
+            right: 15%;
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(79, 70, 229, 0.06) 0%, transparent 70%);
+            z-index: 0;
+            pointer-events: none;
+            filter: blur(80px);
+        }
+
+        /* Glassmorphic Sidebar Override */
+        .sb-sidenav-dark {
+            background: #F8FAFC !important;
+            backdrop-filter: blur(25px) saturate(180%);
+            border-right: 1px solid var(--glass-border);
+        }
+
+        .sb-topnav.navbar-dark.bg-dark {
+            background: #F8FAFC !important;
+            backdrop-filter: blur(25px) saturate(180%);
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        #layoutSidenav_content {
+            z-index: 1;
+            position: relative;
+        }
+
+        .font-weight-bold {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 700;
+        }
+
+        h2.font-weight-bold {
+            letter-spacing: -0.03em;
+            color: var(--text-primary);
+            text-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Glassmorphism Workspace Panels */
+        .glass-card {
+            background: var(--glass-panel);
+            backdrop-filter: blur(25px) saturate(180%);
+            -webkit-backdrop-filter: blur(25px) saturate(180%);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .glass-card:hover {
+            border-color: rgba(37, 99, 235, 0.25);
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.4), 0 0 30px rgba(37, 99, 235, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+        }
+
+        /* Luxury Interactive Table Cards */
+        #pos-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            gap: 40px;
+            justify-content: center;
+            align-content: center;
+            width: 100%;
+            padding: 20px 0;
+        }
+
+        .pos-table-card {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            height: 200px;
+            border-radius: 24px;
+            font-weight: 700;
+            text-decoration: none !important;
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            color: white !important;
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            cursor: pointer;
+            outline: none;
+            overflow: hidden;
+        }
+
+        .pos-table-card::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.12) 0%, transparent 100%);
+            opacity: 0;
+            transition: opacity 0.4s ease;
+            z-index: 1;
+        }
+
+        .pos-table-card:hover::after {
+            opacity: 1;
+        }
+
+        .pos-table-card:hover {
+            transform: translateY(-12px) scale(1.02);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .pos-table-number {
+            font-family: 'Outfit', sans-serif;
+            font-size: 2.1em;
+            margin-bottom: 8px;
+            font-weight: 800;
+            letter-spacing: -0.04em;
+            text-shadow: 0 4px 8px rgba(0,0,0,0.3);
+            z-index: 2;
+        }
+
+        .pos-table-capacity {
+            font-family: 'Inter', sans-serif;
+            font-size: 0.95em;
+            background-color: rgba(0, 0, 0, 0.25);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.08);
+            color: var(--text-primary);
+            padding: 6px 16px;
+            border-radius: 24px;
+            display: inline-flex;
+            align-items: center;
+            font-weight: 600;
+            z-index: 2;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+        }
+        
+        .pos-table-capacity i {
+            margin-right: 6px;
+            font-size: 0.9em;
+            opacity: 0.8;
+        }
+
+        .pos-table-card:hover .pos-table-capacity {
+            background-color: rgba(255, 255, 255, 0.25);
+            border-color: rgba(255, 255, 255, 0.3);
+            transform: scale(1.05);
+        }
+
+        /* Glowing Active Customer Order Bell Indicator */
+        @keyframes blinker {
+            50% { opacity: 0.4; }
+        }
+
+        .bell-indicator {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            z-index: 10;
+            background-color: var(--danger);
+            color: white;
+            border-radius: 50%;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.95em;
+            box-shadow: 0 0 15px var(--danger), inset 0 1px 0 rgba(255,255,255,0.2);
+            animation: blinker 1.5s linear infinite;
+            border: 1px solid rgba(255,255,255,0.15);
+        }
+
+        /* Luxury Legend Indicators */
+        .legend-pill {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 10px 24px;
+            border-radius: 50px;
+            font-family: 'Outfit', sans-serif;
+            font-weight: 700;
+            font-size: 0.95em;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            text-shadow: 0 2px 4px rgba(0,0,0,0.15);
+        }
+
+        .legend-pill:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3) !important;
+        }
+
+        .legend-pill i {
+            font-size: 1.1em;
+        }
+    </style>
+</head>
+<body class="sb-nav-fixed">
+    <!-- Premium Workspace Ambient Orbs -->
+    <div class="ambient-glow-1"></div>
+    <div class="ambient-glow-2"></div>
+
+    <div id="admin-header"></div>
+
+    <div id="layoutSidenav_content" style="padding-top: 56px;">
+        <main>
+            <div class="container-fluid px-4 pt-4">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2 class="font-weight-bold mt-2">
+                        <i class="fa fa-cash-register mr-2 text-primary"></i> Table Seating POS Dashboard
+                    </h2>
+                </div>
+
+                <!-- Custom Table Grid Container Card -->
+                <div class="glass-card mb-4" style="padding: 45px; min-height: 580px; display: flex; flex-direction: column; justify-content: center;">
+                    <div id="pos-grid">
+                        <div class="text-center py-5" style="grid-column: 1 / -1;">
+                            <i class="fa fa-spinner fa-spin fa-3x text-primary mb-3"></i>
+                            <h4 class="text-muted font-weight-bold">Loading live tables POS display...</h4>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sleek Legend Indicators -->
+                <div class="glass-card mb-4" style="padding: 20px 25px;">
+                    <div class="row justify-content-center align-items-center">
+                        <div class="col-md-3 col-sm-4 col-12 my-2">
+                            <div class="legend-pill text-white shadow-sm" 
+                                 style="background: linear-gradient(135deg, #10B981, #059669); box-shadow: 0 4px 15px rgba(16, 185, 129, 0.2);"
+                                 data-toggle="tooltip" data-placement="top" title="Tables That are Free">
+                                <i class="fa-solid fa-circle-check mr-2"></i> Available
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-sm-4 col-12 my-2">
+                            <div class="legend-pill text-white shadow-sm" 
+                                 style="background: linear-gradient(135deg, #EF4444, #DC2626); box-shadow: 0 4px 15px rgba(239, 68, 68, 0.2);"
+                                 data-toggle="tooltip" data-placement="top" title="Tables That are Used">
+                                <i class="fa-solid fa-triangle-exclamation mr-2"></i> Occupied
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-sm-4 col-12 my-2">
+                            <div class="legend-pill text-white shadow-sm" 
+                                 style="background: linear-gradient(135deg, #F59E0B, #D97706); box-shadow: 0 4px 15px rgba(245, 158, 11, 0.25);"
+                                 data-toggle="tooltip" data-placement="top" title="Tables That are Reserved">
+                                <i class="fa-solid fa-calendar-days mr-2"></i> Reserved
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="../js/scripts.js" type="text/javascript"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            let tables = [];
+            let bills = [];
+            let reservations = [];
+
+            function initPOSGrid() {
+                if (typeof firebase === 'undefined' || !window.db) {
+                    setTimeout(initPOSGrid, 100);
+                    return;
+                }
+
+                listenToTables();
+            }
+
+            function listenToTables() {
+                // Listen to tables
+                window.db.collection("tables").onSnapshot(tableSnap => {
+                    tables = [];
+                    tableSnap.forEach(doc => {
+                        tables.push({ id: doc.id, ...doc.data() });
+                    });
+                    tables.sort((a,b) => parseInt(a.table_id) - parseInt(b.table_id));
+
+                    // Listen to bills
+                    window.db.collection("bills").onSnapshot(billSnap => {
+                        bills = [];
+                        billSnap.forEach(doc => {
+                            bills.push({ id: doc.id, ...doc.data() });
+                        });
+
+                        // Listen to today's reservations
+                        const localNow = new Date();
+                        const todayStr = `${localNow.getFullYear()}-${String(localNow.getMonth() + 1).padStart(2, '0')}-${String(localNow.getDate()).padStart(2, '0')}`;
+                        window.db.collection("reservations")
+                            .where("reservation_date", "==", todayStr)
+                            .onSnapshot(resSnap => {
+                                reservations = [];
+                                resSnap.forEach(doc => {
+                                    reservations.push(doc.data());
+                                });
+
+                                renderGrid();
+                            });
+                    });
+                }, err => {
+                    console.error("POS grid error:", err);
+                    document.getElementById("pos-grid").innerHTML = `
+                        <div class="col-12 text-center text-danger font-weight-bold">
+                            <i class="fa fa-exclamation-triangle mr-2"></i> Error connecting to live database: ${err.message}
+                        </div>
+                    `;
+                });
+            }
+
+            function renderGrid() {
+                const grid = document.getElementById("pos-grid");
+                grid.innerHTML = "";
+
+                if (tables.length === 0) {
+                    grid.innerHTML = `
+                        <div style="grid-column: 1 / -1;" class="text-center text-muted py-5">
+                            <i class="fa fa-coffee fa-2x mb-2 d-block"></i> No tables configured. Please add tables in the Table Module.
+                        </div>
+                    `;
+                    return;
+                }
+
+                tables.forEach((table) => {
+                    const tableId = parseInt(table.table_id);
+                    
+                    // 1. Check active unpaid bill
+                    const activeBill = bills.find(b => parseInt(b.table_id) === tableId && b.payment_time === null);
+                    
+                    // 2. Check if reserved today (specifically starting 30 minutes before up to 15 minutes after the reservation start time)
+                    const isReserved = reservations.some(r => {
+                        if (parseInt(r.table_id) !== tableId) return false;
+                        if (!r.reservation_time) return false;
+
+                        const timeParts = r.reservation_time.split(":");
+                        if (timeParts.length < 2) return false;
+
+                        const now = new Date();
+                        const resTime = new Date(
+                            now.getFullYear(),
+                            now.getMonth(),
+                            now.getDate(),
+                            parseInt(timeParts[0]),
+                            parseInt(timeParts[1]),
+                            timeParts[2] ? parseInt(timeParts[2]) : 0
+                        );
+
+                        const diffMinutes = (resTime.getTime() - now.getTime()) / 60000;
+                        return (diffMinutes >= -15 && diffMinutes <= 30);
+                    });
+                    
+                    let cardBackground = "linear-gradient(135deg, #10B981, #059669)"; // Emerald Success by default
+                    let cardShadow = "0 8px 25px rgba(16, 185, 129, 0.22)";
+
+                    if (activeBill) {
+                        const items = activeBill.items_ordered || [];
+                        if (items.length > 0) {
+                            cardBackground = "linear-gradient(135deg, #EF4444, #DC2626)"; // Used/Occupied table
+                            cardShadow = "0 8px 25px rgba(239, 68, 68, 0.22)";
+                        } else {
+                            cardBackground = "linear-gradient(135deg, #10B981, #059669)"; // Emerald Success / empty bill
+                            cardShadow = "0 8px 25px rgba(16, 185, 129, 0.22)";
+                        }
+                    }
+
+                    if (isReserved) {
+                        cardBackground = "linear-gradient(135deg, #F59E0B, #D97706)"; // Amber Warning
+                        cardShadow = "0 8px 25px rgba(245, 158, 11, 0.25)";
+                    }
+
+                    const billIdParam = activeBill ? activeBill.id : "null";
+
+                    const itemDiv = document.createElement("div");
+                    itemDiv.style = "position: relative;";
+                    itemDiv.innerHTML = `
+                        <a href="../posBackend/orderItem.html?bill_id=${billIdParam}&table_id=${tableId}" class="pos-table-card" 
+                           style="background: ${cardBackground}; box-shadow: ${cardShadow};">
+                           <div class="pos-table-number">Table ${tableId}</div>
+                           <div class="pos-table-capacity">
+                               <i class="fa fa-users"></i> ${table.capacity} Seats
+                           </div>
+                       </a>
+                    `;
+
+                    grid.appendChild(itemDiv);
+                });
+            }
+
+            initPOSGrid();
+        });
+    </script>
+</body>
+</html>
+

@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Registration - X Hotel</title>
+    <link rel="stylesheet" href="../css/style.css?v=1.1">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+    <!-- Firebase SDK Compat CDN -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics-compat.js"></script>
+    <script src="../js/firebase-config.js"></script>
+    <script src="../js/component-loader.js"></script>
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif !important;
+            color: var(--text-primary) !important;
+            background-color: var(--bg-workspace) !important;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+        }
+
+        .register-container {
+            width: 440px;
+            padding: 40px;
+            background: var(--glass-panel) !important;
+            backdrop-filter: blur(25px) saturate(180%) !important;
+            -webkit-backdrop-filter: blur(25px) saturate(180%) !important;
+            border: 1px solid var(--glass-border) !important;
+            border-radius: 24px !important;
+            box-shadow: var(--shadow-card) !important;
+            margin: auto !important;
+            max-width: 500px;
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        
+        .register-container:hover {
+            border-color: crimson !important;
+        }
+        
+        .register_wrapper {
+            width: 100% !important;
+            padding: 0 !important;
+        }
+
+        h2 {
+            font-family: 'Outfit', sans-serif !important;
+            font-weight: 700 !important;
+            text-align: center;
+            letter-spacing: -0.02em;
+            margin-bottom: 25px;
+            color: var(--text-primary) !important;
+        }
+
+        p {
+            font-family: 'Inter', sans-serif !important;
+            color: var(--text-secondary) !important;
+        }
+
+        .form-control {
+            background-color: var(--bg-workspace) !important;
+            border: 1px solid var(--glass-border) !important;
+            border-radius: 12px !important;
+            color: var(--text-primary) !important;
+            padding: 12px 18px !important;
+            height: auto !important;
+            transition: all 0.2s ease !important;
+        }
+
+        .form-control:focus {
+            background-color: var(--bg-workspace) !important;
+            border-color: crimson !important;
+            box-shadow: 0 0 0 3px rgba(220, 20, 60, 0.2) !important;
+            color: var(--text-primary) !important;
+        }
+
+        .btn-dark {
+            width: 100% !important;
+            background-color: transparent !important;
+            border: 2px solid crimson !important;
+            color: var(--text-primary) !important;
+            border-radius: 12px !important;
+            font-weight: 600 !important;
+            padding: 12px 20px !important;
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+        }
+
+        .btn-dark:hover {
+            background-color: crimson !important;
+            color: white !important;
+            transform: translateY(-2px) scale(1.02) !important;
+            box-shadow: 0px 0px 12px rgba(220, 20, 60, 0.5) !important;
+        }
+
+        label {
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-secondary) !important;
+            margin-bottom: 6px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        ::placeholder {
+            font-size: 12px;
+        }
+
+        .text-danger {
+            font-size: 13px;
+        }
+    </style>
+</head>
+<body>
+    <div class="register-container">
+    <div class="register_wrapper">
+        <a class="nav-link" href="../home/home.html#hero"> 
+            <h1 class="text-center" style="font-family:Copperplate; color:var(--text-primary) !important;"> X HOTEL</h1>
+        </a><br>
+       
+        <form id="register-form">
+            <div class="form-group">
+                <label>Email</label>
+                <input type="email" id="email" class="form-control" placeholder="Enter Email" required>
+                <span class="text-danger" id="email-error"></span>
+            </div>
+
+            <div class="form-group">
+                <label>Full Name</label>
+                <input type="text" id="member_name" class="form-control" placeholder="Enter Full Name" required>
+                <span class="text-danger" id="name-error"></span>
+            </div>
+
+            <div class="form-group">
+                <label>Password</label>
+                <div class="input-group">
+                    <input type="password" id="password" class="form-control" placeholder="Enter Password" required>
+                    <div class="input-group-append">
+                        <button class="btn btn-dark toggle-password-btn" type="button" data-target="password" style="border: 1px solid var(--glass-border); border-left: none; background-color: var(--bg-workspace) !important; color: var(--text-primary) !important;">
+                            <i class="fa fa-eye-slash" aria-hidden="true"></i>
+                        </button>
+                    </div>
+                </div>
+                <span class="text-danger" id="password-error"></span>
+            </div>
+
+            <div class="form-group">
+                <label>Phone Number</label>
+                <input type="text" id="phone_number" class="form-control" placeholder="Enter Phone Number" required>
+                <span class="text-danger" id="phone-error"></span>
+            </div>
+
+            <button class="btn btn-dark" type="submit" id="submit-btn">Register</button>
+        </form>
+
+        <p style="margin-top:1em; color: var(--text-primary) !important;">Already have an account? <a href="login.html">Proceed to Login</a></p>
+    </div>
+    </div>
+
+    <script>
+    // Password toggle eye icon
+    document.querySelectorAll('.toggle-password-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            const inputId = this.getAttribute('data-target');
+            const input = document.getElementById(inputId);
+            if (input) {
+                const type = input.getAttribute('type') === 'password' ? 'text' : 'password';
+                input.setAttribute('type', type);
+                const icon = this.querySelector('i');
+                if (icon) {
+                    icon.classList.toggle('fa-eye');
+                    icon.classList.toggle('fa-eye-slash');
+                }
+            }
+        });
+    });
+
+    // Form submission & creation
+    document.getElementById("register-form").addEventListener("submit", async function (e) {
+        e.preventDefault();
+
+        const email = document.getElementById("email").value.trim();
+        const memberName = document.getElementById("member_name").value.trim();
+        const password = document.getElementById("password").value;
+        const phoneNumber = document.getElementById("phone_number").value.trim();
+
+        const emailError = document.getElementById("email-error");
+        const nameError = document.getElementById("name-error");
+        const passwordError = document.getElementById("password-error");
+        const phoneError = document.getElementById("phone-error");
+        const submitBtn = document.getElementById("submit-btn");
+
+        // Reset errors
+        emailError.textContent = "";
+        nameError.textContent = "";
+        passwordError.textContent = "";
+        phoneError.textContent = "";
+
+        // Form Validation
+        let hasError = false;
+
+        if (password.length < 6) {
+            passwordError.textContent = "Password must have at least 6 characters.";
+            hasError = true;
+        }
+
+        if (isNaN(phoneNumber)) {
+            phoneError.textContent = "Only enter numeric values!";
+            hasError = true;
+        }
+
+        if (hasError) return;
+
+        if (!window.auth || !window.db) {
+            passwordError.textContent = "Firebase is initializing. Please wait a moment.";
+            return;
+        }
+
+        submitBtn.disabled = true;
+        submitBtn.textContent = "Registering...";
+
+        try {
+            // 1. Check if email already exists in Firestore user accounts
+            const emailCheck = await window.db.collection("users")
+                .where("email", "==", email)
+                .limit(1)
+                .get();
+
+            if (!emailCheck.empty) {
+                emailError.textContent = "This email is already registered.";
+                submitBtn.disabled = false;
+                submitBtn.textContent = "Register";
+                return;
+            }
+
+            // 2. Fetch the highest existing numeric account_id to maintain sequence
+            let newAccountId = 100031; // Seed database starts around here
+            const accountQuery = await window.db.collection("users")
+                .orderBy("account_id", "desc")
+                .limit(1)
+                .get();
+            
+            if (!accountQuery.empty) {
+                const latestId = parseInt(accountQuery.docs[0].data().account_id);
+                if (!isNaN(latestId)) {
+                    newAccountId = latestId + 1;
+                }
+            }
+
+            // 3. Create account in Firebase Auth
+            const userCredential = await window.auth.createUserWithEmailAndPassword(email, password);
+            const user = userCredential.user;
+
+            // 4. Save account & membership unified document in Firestore
+            const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+            
+            const newUser = {
+                account_id: newAccountId.toString(),
+                email: email,
+                name: memberName,
+                phone_number: phoneNumber,
+                password: password, // For legacy fallback compatibility
+                register_date: today,
+                role: "Customer",
+                uid: user.uid
+            };
+
+            await window.db.collection("users").doc(newAccountId.toString()).set(newUser);
+            
+            console.log("Account successfully registered and Firestore seeded.");
+            window.location.href = "register_process.html";
+
+        } catch (error) {
+            console.error("Registration error:", error);
+            if (error.code === 'auth/email-already-in-use') {
+                emailError.textContent = "This email is already registered in Firebase Authentication.";
+            } else {
+                passwordError.textContent = "Registration failed: " + error.message;
+            }
+            submitBtn.disabled = false;
+            submitBtn.textContent = "Register";
+        }
+    });
+    </script>
+</body>
+</html>

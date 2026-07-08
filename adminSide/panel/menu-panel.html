@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <title>Items Details - X Hotel Staff</title>
+    
+    <link href="../css/styles.css?v=1.4" rel="stylesheet" />
+    
+    <!-- Firebase SDK Compat CDN -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+    <script src="../js/firebase-config.js"></script>
+
+    <script src="https://use.fontawesome.com/releases/v6.3.0/js/all.js" crossorigin="anonymous"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    
+    <script src="../js/admin-component-loader.js"></script>
+    <style>
+        .table-container {
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            padding: 20px;
+            margin-top: 20px;
+        }
+        .btn-dark {
+            background-color: #1C1427 !important;
+            border-color: #1C1427 !important;
+        }
+        .btn-dark:hover {
+            background-color: #2D1F3F !important;
+            border-color: #2D1F3F !important;
+        }
+        .badge-active {
+            background-color: #28a745;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-weight: 600;
+            text-decoration: none;
+            cursor: pointer;
+            border: none;
+        }
+        .badge-inactive {
+            background-color: #dc3545;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-weight: 600;
+            text-decoration: none;
+            cursor: pointer;
+            border: none;
+        }
+    </style>
+</head>
+<body class="sb-nav-fixed">
+
+    <div id="admin-header"></div>
+
+    <div id="layoutSidenav_content" style="padding-top: 56px;">
+        <main>
+            <div class="container-fluid px-4 pt-4">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2 class="font-weight-bold mt-2" style="color: #1C1427;">
+                        <i class="fa fa-utensils mr-2"></i> Menu Items Details
+                    </h2>
+                    <button class="btn btn-outline-dark font-weight-bold" data-toggle="modal" data-target="#addItemModal">
+                        <i class="fa fa-plus mr-1"></i> Add Menu Item
+                    </button>
+                </div>
+
+                <div id="message-container"></div>
+
+                <!-- Dropdown Search Filter -->
+                <div class="card bg-light p-3 mb-4 border">
+                    <form id="search-form" onsubmit="event.preventDefault(); filterMenuItems();">
+                        <div class="row align-items-center">
+                            <div class="col-md-6 mb-2 mb-md-0">
+                                <select id="search-filter" class="form-control form-control-lg" onchange="filterMenuItems()">
+                                    <option value="">Show All Categories & Statuses</option>      
+                                    <option value="Main Dish">Main Dish</option>
+                                    <option value="Side Snacks">Side Snacks</option>
+                                    <option value="Drinks">Drinks</option>                                    
+                                    <option value="Active">Status: Active</option>
+                                    <option value="Inactive">Status: Inactive</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-2 mb-md-0">
+                                <input type="text" id="search-text" class="form-control form-control-lg" placeholder="Search by name, ID or description..." oninput="filterMenuItems()">
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Menu Table -->
+                <div class="table-container">
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-striped table-hover mb-0">
+                            <thead class="thead-dark">
+                                <tr>
+                                    <th style="width: 80px;">Item ID</th>
+                                    <th>Name</th>
+                                    <th>Category</th>
+                                    <th style="width: 110px;">Price</th>
+                                    <th>Description</th>
+                                    <th style="width: 110px; class="text-center">Status</th>
+                                    <th class="text-center" style="width: 80px;">Edit</th>
+                                    <th class="text-center" style="width: 80px;">Delete</th>
+                                </tr>
+                            </thead>
+                            <tbody id="menu-table-body">
+                                <tr>
+                                    <td colspan="8" class="text-center py-5">
+                                        <i class="fa fa-spinner fa-spin fa-2x mb-2 d-block text-muted"></i>
+                                        <span class="text-muted font-weight-bold">Connecting to menu database...</span>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- ADD ITEM MODAL -->
+    <div class="modal fade" id="addItemModal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header bg-dark text-white">
+                    <h5 class="modal-title font-weight-bold"><i class="fa fa-plus-circle mr-2"></i>Add Menu Item</h5>
+                    <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <form id="add-item-form" onsubmit="event.preventDefault(); saveNewMenuItem();">
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label class="font-weight-bold">Item ID</label>
+                            <input type="text" id="add-item-id" class="form-control" required placeholder="e.g. M105 or D24">
+                            <small class="form-text text-muted">Use 'M' prefix for Main, 'S' for Snacks, 'D' for Drinks (e.g. M101, S04, D08).</small>
+                        </div>
+                        <div class="form-group">
+                            <label class="font-weight-bold">Item Name</label>
+                            <input type="text" id="add-item-name" class="form-control" required placeholder="e.g. Spicy Chicken Rice">
+                        </div>
+                        <div class="form-group">
+                            <label class="font-weight-bold">Category</label>
+                            <select id="add-item-category" class="form-control" required>
+                                <option value="Main Dish">Main Dish</option>
+                                <option value="Side Snacks">Side Snacks</option>
+                                <option value="Drinks">Drinks</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="font-weight-bold">Price (Rs)</label>
+                            <input type="number" id="add-item-price" step="0.01" class="form-control" required placeholder="e.g. 850.00" min="0">
+                        </div>
+                        <div class="form-group">
+                            <label class="font-weight-bold">Description</label>
+                            <textarea id="add-item-desc" class="form-control" placeholder="Brief details about the dish ingredients..." rows="3"></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-light border font-weight-bold" data-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-dark font-weight-bold">Create Item</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- EDIT ITEM MODAL -->
+    <div class="modal fade" id="editItemModal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header bg-dark text-white">
+                    <h5 class="modal-title font-weight-bold"><i class="fa fa-pencil-alt mr-2"></i>Modify Menu Item Details</h5>
+                    <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <form id="edit-item-form" onsubmit="event.preventDefault(); updateMenuItem();">
+                    <div class="modal-body">
+                        <input type="hidden" id="edit-item-doc-id">
+                        <div class="form-group">
+                            <label class="font-weight-bold">Item ID</label>
+                            <input type="text" id="edit-item-id-display" class="form-control" readonly disabled>
+                        </div>
+                        <div class="form-group">
+                            <label class="font-weight-bold">Item Name</label>
+                            <input type="text" id="edit-item-name" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="font-weight-bold">Category</label>
+                            <select id="edit-item-category" class="form-control" required>
+                                <option value="Main Dish">Main Dish</option>
+                                <option value="Side Snacks">Side Snacks</option>
+                                <option value="Drinks">Drinks</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="font-weight-bold">Price (Rs)</label>
+                            <input type="number" id="edit-item-price" step="0.01" class="form-control" required min="0">
+                        </div>
+                        <div class="form-group">
+                            <label class="font-weight-bold">Description</label>
+                            <textarea id="edit-item-desc" class="form-control" rows="3"></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-light border font-weight-bold" data-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-dark font-weight-bold">Save Changes</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="../js/scripts.js" type="text/javascript"></script>
+    <script>
+        let menuCache = [];
+
+        document.addEventListener("DOMContentLoaded", function () {
+            function initMenu() {
+                if (typeof firebase === 'undefined' || !window.db) {
+                    setTimeout(initMenu, 100);
+                    return;
+                }
+
+                // Query menu items in real-time
+                window.db.collection("menu")
+                    .onSnapshot(snapshot => {
+                        menuCache = [];
+                        snapshot.forEach(doc => {
+                            menuCache.push({
+                                id: doc.id,
+                                ...doc.data()
+                            });
+                        });
+
+                        // Sort: Drinks first, Side Snacks second, Main Dish third, then numerically by item ID length and value
+                        menuCache.sort((a, b) => {
+                            const getCatVal = (cat) => {
+                                if (cat === "Drinks") return 1;
+                                if (cat === "Side Snacks") return 2;
+                                if (cat === "Main Dish") return 3;
+                                return 4;
+                            };
+                            const catDiff = getCatVal(a.item_category) - getCatVal(b.item_category);
+                            if (catDiff !== 0) return catDiff;
+                            
+                            if (a.item_id.length !== b.item_id.length) {
+                                return a.item_id.length - b.item_id.length;
+                            }
+                            return a.item_id.localeCompare(b.item_id);
+                        });
+
+                        renderMenu(menuCache);
+                    }, err => {
+                        console.error("Error loading menu:", err);
+                        document.getElementById("menu-table-body").innerHTML = `
+                            <tr>
+                                <td colspan="8" class="text-center text-danger py-4 font-weight-bold">
+                                    <i class="fa fa-exclamation-triangle mr-2"></i> Error: ${err.message}
+                                </td>
+                            </tr>
+                        `;
+                    });
+            }
+
+            initMenu();
+        });
+
+        function renderMenu(items) {
+            const tableBody = document.getElementById("menu-table-body");
+            if (items.length === 0) {
+                tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="8" class="text-center text-muted py-4">No menu items found.</td>
+                    </tr>
+                `;
+                return;
+            }
+
+            let html = "";
+            items.forEach(item => {
+                const status = item.status || "Active";
+                const badgeClass = status === "Active" ? "badge-active" : "badge-inactive";
+                const desc = item.item_description || "-";
+
+                html += `
+                    <tr>
+                        <td class="font-weight-bold text-dark">${item.item_id}</td>
+                        <td class="font-weight-bold" style="color: #1c1427;">${item.item_name}</td>
+                        <td class="text-muted font-weight-bold">${item.item_category}</td>
+                        <td class="font-weight-bold text-dark text-right">Rs ${parseFloat(item.item_price).toFixed(2)}</td>
+                        <td style="font-size: 0.9em; max-width: 250px;">${desc}</td>
+                        <td class="text-center align-middle">
+                            <button onclick="toggleItemStatus('${item.id}', '${status}')" class="${badgeClass}">
+                                ${status}
+                            </button>
+                        </td>
+                        <td class="text-center align-middle">
+                            <button onclick="openEditModal('${item.id}', '${item.item_id}', '${item.item_name.replace(/'/g, "\\'")}', '${item.item_category}', ${item.item_price}, '${(item.item_description || "").replace(/'/g, "\\'")}')" class="btn btn-sm btn-outline-dark">
+                                <i class="fa fa-pencil"></i>
+                            </button>
+                        </td>
+                        <td class="text-center align-middle">
+                            <button onclick="deleteMenuItem('${item.id}', '${item.item_name.replace(/'/g, "\\'")}')" class="btn btn-sm btn-outline-danger">
+                                <i class="fa fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            tableBody.innerHTML = html;
+        }
+
+        function filterMenuItems() {
+            const filterVal = document.getElementById("search-filter").value.trim().toLowerCase();
+            const searchText = document.getElementById("search-text").value.trim().toLowerCase();
+
+            let filtered = menuCache;
+
+            if (filterVal) {
+                filtered = filtered.filter(item => {
+                    const cat = (item.item_category || "").toLowerCase();
+                    const status = (item.status || "active").toLowerCase();
+                    if (filterVal === "active" || filterVal === "inactive") {
+                        return status === filterVal;
+                    }
+                    return cat.includes(filterVal);
+                });
+            }
+
+            if (searchText) {
+                filtered = filtered.filter(item => {
+                    const name = (item.item_name || "").toLowerCase();
+                    const id = (item.item_id || "").toLowerCase();
+                    const desc = (item.item_description || "").toLowerCase();
+                    return name.includes(searchText) || id.includes(searchText) || desc.includes(searchText);
+                });
+            }
+
+            renderMenu(filtered);
+        }
+
+        function clearFilters() {
+            document.getElementById("search-filter").value = "";
+            document.getElementById("search-text").value = "";
+            renderMenu(menuCache);
+        }
+
+        // --- CRUD ACTIONS ---
+
+        async function toggleItemStatus(docId, currentStatus) {
+            const newStatus = currentStatus === "Active" ? "Inactive" : "Active";
+            if (!confirm(`Are you sure you want to change the status of this item to ${newStatus}?`)) {
+                return;
+            }
+
+            try {
+                await window.db.collection("menu").doc(docId).update({
+                    status: newStatus
+                });
+            } catch (err) {
+                console.error("Error toggling status:", err);
+                alert("Error: " + err.message);
+            }
+        }
+
+        async function saveNewMenuItem() {
+            const itemIdInput = document.getElementById("add-item-id").value.trim();
+            const nameInput = document.getElementById("add-item-name").value.trim();
+            const categoryInput = document.getElementById("add-item-category").value;
+            const priceInput = parseFloat(document.getElementById("add-item-price").value);
+            const descInput = document.getElementById("add-item-desc").value.trim();
+            const msgContainer = document.getElementById("message-container");
+
+            if (!itemIdInput || !nameInput || isNaN(priceInput)) return;
+
+            try {
+                // Check uniqueness
+                const checkDoc = await window.db.collection("menu").doc(itemIdInput).get();
+                if (checkDoc.exists) {
+                    alert(`Item ID ${itemIdInput} already exists! Plase choose a unique ID.`);
+                    return;
+                }
+
+                await window.db.collection("menu").doc(itemIdInput).set({
+                    item_id: itemIdInput,
+                    item_name: nameInput,
+                    item_category: categoryInput,
+                    item_price: priceInput,
+                    item_description: descInput,
+                    status: "Active"
+                });
+
+                $('#addItemModal').modal('hide');
+                document.getElementById("add-item-form").reset();
+
+                msgContainer.innerHTML = `
+                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                        Menu Item <strong>${nameInput}</strong> added successfully!
+                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                `;
+
+            } catch (err) {
+                console.error("Error saving menu item:", err);
+                alert("Error: " + err.message);
+            }
+        }
+
+        function openEditModal(docId, itemId, name, category, price, desc) {
+            document.getElementById("edit-item-doc-id").value = docId;
+            document.getElementById("edit-item-id-display").value = `Item ID: ${itemId}`;
+            document.getElementById("edit-item-name").value = name;
+            document.getElementById("edit-item-category").value = category;
+            document.getElementById("edit-item-price").value = price;
+            document.getElementById("edit-item-desc").value = desc;
+            $('#editItemModal').modal('show');
+        }
+
+        async function updateMenuItem() {
+            const docId = document.getElementById("edit-item-doc-id").value;
+            const nameInput = document.getElementById("edit-item-name").value.trim();
+            const categoryInput = document.getElementById("edit-item-category").value;
+            const priceInput = parseFloat(document.getElementById("edit-item-price").value);
+            const descInput = document.getElementById("edit-item-desc").value.trim();
+            const msgContainer = document.getElementById("message-container");
+
+            if (!nameInput || isNaN(priceInput)) return;
+
+            try {
+                await window.db.collection("menu").doc(docId).update({
+                    item_name: nameInput,
+                    item_category: categoryInput,
+                    item_price: priceInput,
+                    item_description: descInput
+                });
+
+                $('#editItemModal').modal('hide');
+
+                msgContainer.innerHTML = `
+                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                        Menu item details updated successfully!
+                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                `;
+
+            } catch (err) {
+                console.error("Error updating menu item:", err);
+                alert("Error: " + err.message);
+            }
+        }
+
+        async function deleteMenuItem(docId, itemName) {
+            if (!confirm(`Are you sure you want to delete "${itemName}"? This can cause billing records to mismatch.`)) {
+                return;
+            }
+
+            const msgContainer = document.getElementById("message-container");
+
+            try {
+                await window.db.collection("menu").doc(docId).delete();
+
+                msgContainer.innerHTML = `
+                    <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                        Menu item "${itemName}" deleted successfully.
+                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                `;
+
+            } catch (err) {
+                console.error("Error deleting menu item:", err);
+                alert("Error: " + err.message);
+            }
+        }
+    </script>
+</body>
+</html>
+

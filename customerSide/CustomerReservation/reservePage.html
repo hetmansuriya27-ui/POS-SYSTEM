@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../css/style.css?v=1.1">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    
+    <!-- Firebase SDK Compat CDN -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics-compat.js"></script>
+    <script src="../js/firebase-config.js"></script>
+    <script src="../js/component-loader.js"></script>
+
+    <title>Customer Reservation - X Hotel</title>
+    <style>
+        body {
+            font-family: 'Montserrat', sans-serif !important;
+            background-color: var(--bg-workspace) !important;    
+            display: flex;
+            color: var(--text-primary) !important;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .reserve-container {
+            width: 100%;
+            max-width: 60em; /* Expanded slightly for nice layout of two forms */
+            padding: 20px;
+        }
+        .column {
+            padding: 20px;
+            text-align: left;
+            background-color: var(--glass-panel) !important;
+            border-radius: 8px;
+            border: 1px solid var(--glass-border) !important;
+            margin: 10px;
+            box-shadow: var(--shadow-card) !important;
+        }
+        .row-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+        }
+        .column-half {
+            flex: 1;
+            min-width: 280px;
+        }
+        label {
+            font-weight: 500;
+            color: var(--text-primary) !important;
+        }
+        .form-control {
+            background-color: var(--bg-workspace) !important;
+            border: 1px solid var(--glass-border) !important;
+            color: var(--text-primary) !important;
+        }
+        .form-control:focus {
+            background-color: var(--bg-workspace) !important;
+            border-color: crimson !important;
+            color: var(--text-primary) !important;
+            box-shadow: 0 0 0 0.2rem rgba(220, 20, 60, 0.25) !important;
+        }
+        .text-success-msg {
+            color: #5DBE6F;
+            font-weight: bold;
+        }
+        .cta-btn-block {
+            background-color: transparent;
+            color: var(--text-primary) !important;
+            border: 2px solid crimson;
+            font-size: 1.4rem;
+            text-transform: uppercase;
+            font-weight: bold;
+            letter-spacing: 0.1rem;
+            transition: 0.3s ease;
+            border-radius: 6px;
+            width: 100%;
+            display: block;
+        }
+        .cta-btn-block:hover {
+            background-color: crimson;
+            color: white !important;
+            box-shadow: 0px 0px 12px rgba(220, 20, 60, 0.5);
+            text-decoration: none !important;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="reserve-container">
+        <a class="nav-link" href="../home/home.html#hero">
+            <h1 class="text-center" style="font-family: Copperplate; color: whitesmoke; margin-bottom: 20px;">X HOTEL</h1>
+        </a>
+
+        <div class="row-container">
+            <!-- LEFT COLUMN: SEARCH AVAILABILITY -->
+            <div id="search-column" class="column column-half">
+                <div id="Search-Table">
+                    <h2 style="color: var(--text-primary) !important; border-bottom: 2px solid crimson; padding-bottom: 10px; margin-bottom: 20px;">Search for Time</h2>
+                 
+                    <form id="search-form"><br>
+                        <div class="form-group">
+                            <label for="search_date">Select Date</label><br>
+                            <input class="form-control" type="date" id="search_date" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="search_time">Available Reservation Times</label>
+                            <select id="search_time" class="form-control" required>
+                                <option value="" selected disabled>Select a Time</option>
+                                <option value="10:00:00">10:00:00</option>
+                                <option value="11:00:00">11:00:00</option>
+                                <option value="12:00:00">12:00:00</option>
+                                <option value="13:00:00">13:00:00</option>
+                                <option value="14:00:00">14:00:00</option>
+                                <option value="15:00:00">15:00:00</option>
+                                <option value="16:00:00">16:00:00</option>
+                                <option value="17:00:00">17:00:00</option>
+                                <option value="18:00:00">18:00:00</option>
+                                <option value="19:00:00">19:00:00</option>
+                                <option value="20:00:00">20:00:00</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="search_head_count">Number of People</label>
+                            <input class="form-control" type="number" id="search_head_count" min="1" max="12" value="1" required>
+                        </div>
+              
+                        <button type="submit" id="search-btn" class="btn cta-btn-block py-2">Search Available Tables</button>
+                    </form>
+                    
+                    <div id="search-status" style="margin-top: 15px; text-align: center;"></div>
+                </div>
+            </div>
+
+            <!-- RIGHT COLUMN: MAKE RESERVATION -->
+            <div id="reservation-column" class="column column-half" style="display: none;">
+                <div id="insert-reservation-into-table">
+                    <h2 style="color: var(--text-primary) !important; border-bottom: 2px solid crimson; padding-bottom: 10px; margin-bottom: 20px;">Make Reservation</h2>
+                    <form id="reservation-form">
+                        <br>
+                        <div class="form-group">
+                            <label for="customer_name">Customer Name</label><br>
+                            <input class="form-control" type="text" id="customer_name" name="customer_name" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="phone_number">Mobile Number</label><br>
+                            <input class="form-control" type="text" id="phone_number" name="phone_number" required placeholder="e.g. 0123456789">
+                        </div>
+                   
+                        <div class="form-row">
+                            <div class="form-group col-md-6">
+                                <label for="reserve_date">Date</label>
+                                <input class="form-control" type="date" id="reserve_date" name="reservation_date" readonly required style="background-color: var(--bg-workspace) !important; color: var(--text-primary) !important; border: 1px solid var(--glass-border) !important;">
+                            </div>
+                            <div class="form-group col-md-6">
+                                <label for="reserve_time">Time</label>
+                                <input class="form-control" type="text" id="reserve_time" name="reservation_time" readonly required style="background-color: var(--bg-workspace) !important; color: var(--text-primary) !important; border: 1px solid var(--glass-border) !important;">
+                            </div>
+                        </div>
+                 
+                        <input type="hidden" id="table_id_reserve" name="table_id">
+                        <input type="hidden" id="head_count" name="head_count">
+                        <div class="form-group" id="assigned_table_container">
+                            <label for="assigned_table_display">Assigned Table</label>
+                            <input class="form-control" type="text" id="assigned_table_display" readonly style="background-color: var(--bg-workspace) !important; color: var(--text-primary) !important; border: 1px solid var(--glass-border) !important;">
+                        </div>
+                 
+                        <div class="form-group mb-3">
+                            <label for="special_request">Special request</label><br>
+                            <textarea class="form-control" id="special_request" name="special_request" rows="2"></textarea><br>
+                            <button type="submit" id="reserve-btn" class="btn cta-btn-block py-2" disabled>Make Reservation</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <div style="text-align: center; margin-top: 20px;">
+            <a href="../home/home.html" style="color: var(--text-primary) !important; text-decoration: underline;">Back to Homepage</a>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const localNow = new Date();
+            const todayStr = `${localNow.getFullYear()}-${String(localNow.getMonth() + 1).padStart(2, '0')}-${String(localNow.getDate()).padStart(2, '0')}`;
+            document.getElementById("search_date").min = todayStr;
+
+            // Prefill name if user is logged in
+            function checkUserSession() {
+                const loggedInName = localStorage.getItem("user_name") || localStorage.getItem("member_name");
+                if (loggedInName) {
+                    document.getElementById("customer_name").value = loggedInName;
+                }
+            }
+            checkUserSession();
+
+            // Search Available Tables
+            document.getElementById("search-form").addEventListener("submit", async function (e) {
+                e.preventDefault();
+
+                const searchDate = document.getElementById("search_date").value;
+                const searchTime = document.getElementById("search_time").value;
+                const searchHeadCount = parseInt(document.getElementById("search_head_count").value || 1);
+                const searchStatus = document.getElementById("search-status");
+                const searchBtn = document.getElementById("search-btn");
+                
+                const tableIdReserve = document.getElementById("table_id_reserve");
+                const headCountReserve = document.getElementById("head_count");
+                const assignedTableDisplay = document.getElementById("assigned_table_display");
+                const reserveBtn = document.getElementById("reserve-btn");
+
+                const searchColumn = document.getElementById("search-column");
+                const reservationColumn = document.getElementById("reservation-column");
+
+                if (!window.db) {
+                    searchStatus.innerHTML = "<span class='text-danger'>Database is initializing. Try again.</span>";
+                    return;
+                }
+
+                searchBtn.disabled = true;
+                searchBtn.textContent = "Searching...";
+                searchStatus.innerHTML = "";
+
+                try {
+                    // 1. Query Firestore 'reservations' to find occupied tables at this date and time
+                    const reservationsSnapshot = await window.db.collection("reservations")
+                        .where("reservation_date", "==", searchDate)
+                        .where("reservation_time", "==", searchTime)
+                        .get();
+
+                    const occupiedTableIds = [];
+                    reservationsSnapshot.forEach(doc => {
+                        occupiedTableIds.push(doc.data().table_id.toString());
+                    });
+
+                    // 2. Fetch all tables from Firestore 'tables' collection
+                    const tablesSnapshot = await window.db.collection("tables").get();
+                    
+                    const availableTables = [];
+
+                    tablesSnapshot.forEach(doc => {
+                        const table = doc.data();
+                        const tableId = table.table_id.toString();
+
+                        if (!occupiedTableIds.includes(tableId) && table.capacity >= searchHeadCount) {
+                            availableTables.push(table);
+                        }
+                    });
+
+                    // Sort by capacity ascending to get the smallest table that fits
+                    availableTables.sort((a, b) => a.capacity - b.capacity);
+
+                    if (availableTables.length > 0) {
+                        const autoSelectedTable = availableTables[0];
+                        const tableId = autoSelectedTable.table_id.toString();
+                        const capacity = autoSelectedTable.capacity;
+
+                        // Fill in read-only / hidden fields in reservation form
+                        document.getElementById("reserve_date").value = searchDate;
+                        document.getElementById("reserve_time").value = searchTime;
+                        tableIdReserve.value = tableId;
+                        headCountReserve.value = searchHeadCount;
+                        assignedTableDisplay.value = `Table ID: ${tableId} (For up to ${capacity} people)`;
+
+                        // Enable reservation button
+                        reserveBtn.disabled = false;
+
+                        // Hide search column, show reservation column
+                        searchColumn.style.display = "none";
+                        reservationColumn.style.display = "block";
+                        // Reset flex classes so it takes full width
+                        reservationColumn.className = "column col-md-12";
+                    } else {
+                        reserveBtn.disabled = true;
+                        searchStatus.innerHTML = `<span class='text-danger'>No tables available for ${searchHeadCount} people at the selected time. Please choose another time or party size.</span>`;
+                        alert("No reservation tables found for the selected time. Please choose another time.");
+                    }
+
+                } catch (error) {
+                    console.error("Availability search error:", error);
+                    searchStatus.innerHTML = "<span class='text-danger'>Search failed. Try again later.</span>";
+                } finally {
+                    searchBtn.disabled = false;
+                    searchBtn.textContent = "Search Available Tables";
+                }
+            });
+
+            // Make Reservation Form Submit Handler
+            document.getElementById("reservation-form").addEventListener("submit", async function (e) {
+                e.preventDefault();
+
+                const customerName = document.getElementById("customer_name").value.trim();
+                const phoneNumber = document.getElementById("phone_number").value.trim();
+                const reserveDate = document.getElementById("reserve_date").value;
+                const reserveTime = document.getElementById("reserve_time").value;
+                const tableId = document.getElementById("table_id_reserve").value;
+                const headCount = parseInt(document.getElementById("head_count").value || 1);
+                const specialRequest = document.getElementById("special_request").value.trim();
+                const reserveBtn = document.getElementById("reserve-btn");
+
+                if (!window.db) return;
+
+                reserveBtn.disabled = true;
+                reserveBtn.textContent = "Booking...";
+
+                try {
+                    // Generate clean, collision-free unique document ID
+                    const timeNumeric = reserveTime.replace(/:/g, ''); 
+                    const reservationId = `${reserveDate}_${timeNumeric}_${tableId}`;
+
+                    const newReservation = {
+                        reservation_id: reservationId,
+                        customer_name: customerName,
+                        phone_number: phoneNumber,
+                        table_id: parseInt(tableId),
+                        reservation_time: reserveTime,
+                        reservation_date: reserveDate,
+                        head_count: headCount,
+                        special_request: specialRequest || "None"
+                    };
+
+                    // 1. Add to Firestore 'reservations'
+                    await window.db.collection("reservations").doc(reservationId).set(newReservation);
+
+                    // 2. Add to Firestore 'table_availability'
+                    const newAvailability = {
+                        availability_id: reservationId,
+                        table_id: parseInt(tableId),
+                        reservation_date: reserveDate,
+                        reservation_time: reserveTime,
+                        status: "no"
+                    };
+                    await window.db.collection("table_availability").doc(reservationId).set(newAvailability);
+
+                    alert("Table Successfully Reserved. Click OK to view your reservation receipt.");
+                    window.location.href = `reservationReceipt.html?reservation_id=${reservationId}`;
+
+                } catch (error) {
+                    console.error("Booking error:", error);
+                    alert("Booking failed: " + error.message);
+                    reserveBtn.disabled = false;
+                    reserveBtn.textContent = "Make Reservation";
+                }
+            });
+
+        });
+    </script>
+</body>
+</html>

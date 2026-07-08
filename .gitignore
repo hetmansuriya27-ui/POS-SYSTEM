@@ -1,0 +1,4 @@
+node_modules/
+.firebase/
+scratch/serviceAccountKey.json
+setup_completed.flag

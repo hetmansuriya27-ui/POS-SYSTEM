@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../css/style.css?v=1.1">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/owl-carousel/1.3.3/owl.carousel.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/owl-carousel/1.3.3/owl.theme.min.css">
+    
+    <!-- Firebase SDK Compat CDN (REQUIRED FIRST) -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics-compat.js"></script>
+    <script src="../js/firebase-config.js"></script>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="../js/component-loader.js"></script>
+
+    <title>Home</title>
+</head>
+<body>
+    <!-- Header Navbar Container -->
+    <section id="header">
+        <div class="header container">
+            <div class="nav-bar">
+                <div class="brand">
+                    <a class="nav-link" href="../home/home.html#hero">
+                        <h1 class="text-center" style="font-family:Copperplate; color: var(--text-primary);"> X HOTEL</h1>
+                    </a>
+                </div>
+                <div class="nav-list">
+                    <div class="hamburger">
+                        <div class="bar"></div>
+                    </div>
+                    <div class="navbar-container">
+                        <div class="navbar">
+                            <ul style="display: flex; align-items: center;">
+                                <li><a id="nav-home-link" href="../home/home.html" data-after="Home">Home</a></li>
+                                <li><a id="nav-menu-link" href="../home/home.html#projects" data-after="Projects">Menu</a></li>
+                                <li><a id="nav-reserve-link" href="../CustomerReservation/reservePage.html" data-after="Service">Reservation</a></li>
+                                <li><a id="nav-about-link" href="../home/home.html#about" data-after="About">About</a></li>
+                                <li><a id="nav-contact-link" href="../home/home.html#contact" data-after="Contact">Contact</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>

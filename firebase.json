@@ -1,0 +1,205 @@
+{
+  "firestore": {
+    "rules": "firestore.rules"
+  },
+  "hosting": [
+    {
+      "target": "customer",
+      "public": ".",
+      "ignore": [
+        "firebase.json",
+        "**/.*",
+        "**/node_modules/**"
+      ],
+      "redirects": [
+        {
+          "source": "/",
+          "destination": "/customerSide/home/home.html",
+          "type": 302
+        },
+        {
+          "source": "/index.html",
+          "destination": "/customerSide/home/home.html",
+          "type": 302
+        },
+        {
+          "source": "/adminSide/accountCrud/createStaffAccount.php",
+          "destination": "/adminSide/accountCrud/createStaffAccount.html",
+          "type": 302
+        },
+        {
+          "source": "/adminSide/panel/account-panel.php",
+          "destination": "/adminSide/panel/account-panel.html",
+          "type": 302
+        },
+        {
+          "source": "/adminSide/panel/reservation-panel.php",
+          "destination": "/adminSide/panel/reservation-panel.html",
+          "type": 302
+        },
+        {
+          "source": "/adminSide/panel/pos-panel.php",
+          "destination": "/adminSide/panel/pos-panel.html",
+          "type": 302
+        },
+        {
+          "source": "/adminSide/panel/menu-panel.php",
+          "destination": "/adminSide/panel/menu-panel.html",
+          "type": 302
+        },
+        {
+          "source": "/adminSide/panel/statistics-panel.php",
+          "destination": "/adminSide/panel/statistics-panel.html",
+          "type": 302
+        },
+        {
+          "source": "/adminSide/panel/online-orders-panel.php",
+          "destination": "/adminSide/panel/online-orders-panel.html",
+          "type": 302
+        },
+        {
+          "source": "/customerSide/CustomerReservation/reservePage.php",
+          "destination": "/customerSide/CustomerReservation/reservePage.html",
+          "type": 302
+        },
+        {
+          "source": "/customerSide/CustomerReservation/reservationReceipt.php",
+          "destination": "/customerSide/CustomerReservation/reservationReceipt.html",
+          "type": 302
+        }
+      ]
+    },
+    {
+      "target": "admin",
+      "public": ".",
+      "ignore": [
+        "firebase.json",
+        "**/.*",
+        "**/node_modules/**"
+      ],
+      "redirects": [
+        {
+          "source": "/",
+          "destination": "/adminSide/StaffLogin/login.html",
+          "type": 302
+        },
+        {
+          "source": "/index.html",
+          "destination": "/adminSide/StaffLogin/login.html",
+          "type": 302
+        },
+        {
+          "source": "/adminSide/accountCrud/createStaffAccount.php",
+          "destination": "/adminSide/accountCrud/createStaffAccount.html",
+          "type": 302
+        },
+        {
+          "source": "/adminSide/panel/account-panel.php",
+          "destination": "/adminSide/panel/account-panel.html",
+          "type": 302
+        },
+        {
+          "source": "/adminSide/panel/reservation-panel.php",
+          "destination": "/adminSide/panel/reservation-panel.html",
+          "type": 302
+        },
+        {
+          "source": "/adminSide/panel/pos-panel.php",
+          "destination": "/adminSide/panel/pos-panel.html",
+          "type": 302
+        },
+        {
+          "source": "/adminSide/panel/menu-panel.php",
+          "destination": "/adminSide/panel/menu-panel.html",
+          "type": 302
+        },
+        {
+          "source": "/adminSide/panel/statistics-panel.php",
+          "destination": "/adminSide/panel/statistics-panel.html",
+          "type": 302
+        },
+        {
+          "source": "/adminSide/panel/online-orders-panel.php",
+          "destination": "/adminSide/panel/online-orders-panel.html",
+          "type": 302
+        },
+        {
+          "source": "/customerSide/CustomerReservation/reservePage.php",
+          "destination": "/customerSide/CustomerReservation/reservePage.html",
+          "type": 302
+        },
+        {
+          "source": "/customerSide/CustomerReservation/reservationReceipt.php",
+          "destination": "/customerSide/CustomerReservation/reservationReceipt.html",
+          "type": 302
+        }
+      ]
+    },
+    {
+      "target": "ordering",
+      "public": ".",
+      "ignore": [
+        "firebase.json",
+        "**/.*",
+        "**/node_modules/**"
+      ],
+      "redirects": [
+        {
+          "source": "/",
+          "destination": "/customerSide/home/customerOrdering.html",
+          "type": 302
+        },
+        {
+          "source": "/index.html",
+          "destination": "/customerSide/home/customerOrdering.html",
+          "type": 302
+        },
+        {
+          "source": "/adminSide/accountCrud/createStaffAccount.php",
+          "destination": "/adminSide/accountCrud/createStaffAccount.html",
+          "type": 302
+        },
+        {
+          "source": "/adminSide/panel/account-panel.php",
+          "destination": "/adminSide/panel/account-panel.html",
+          "type": 302
+        },
+        {
+          "source": "/adminSide/panel/reservation-panel.php",
+          "destination": "/adminSide/panel/reservation-panel.html",
+          "type": 302
+        },
+        {
+          "source": "/adminSide/panel/pos-panel.php",
+          "destination": "/adminSide/panel/pos-panel.html",
+          "type": 302
+        },
+        {
+          "source": "/adminSide/panel/menu-panel.php",
+          "destination": "/adminSide/panel/menu-panel.html",
+          "type": 302
+        },
+        {
+          "source": "/adminSide/panel/statistics-panel.php",
+          "destination": "/adminSide/panel/statistics-panel.html",
+          "type": 302
+        },
+        {
+          "source": "/adminSide/panel/online-orders-panel.php",
+          "destination": "/adminSide/panel/online-orders-panel.html",
+          "type": 302
+        },
+        {
+          "source": "/customerSide/CustomerReservation/reservePage.php",
+          "destination": "/customerSide/CustomerReservation/reservePage.html",
+          "type": 302
+        },
+        {
+          "source": "/customerSide/CustomerReservation/reservationReceipt.php",
+          "destination": "/customerSide/CustomerReservation/reservationReceipt.html",
+          "type": 302
+        }
+      ]
+    }
+  ]
+}

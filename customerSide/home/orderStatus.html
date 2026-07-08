@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../css/style.css?v=1.1">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    
+    <!-- Firebase SDK Compat CDN -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics-compat.js"></script>
+    <script src="../js/firebase-config.js"></script>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="../js/component-loader.js"></script>
+
+    <title>Track Orders - X Hotel</title>
+    <style>
+        body {
+            font-family: 'Montserrat', sans-serif !important;
+            background-color: var(--bg-workspace) !important;
+            color: var(--text-primary) !important;
+        }
+        .status-card {
+            background: var(--glass-panel) !important;
+            border: 1px solid var(--glass-border) !important;
+            border-radius: 12px;
+            box-shadow: var(--shadow-card) !important;
+            transition: transform 0.2s, border-color 0.2s;
+        }
+        .status-card:hover {
+            transform: translateY(-2px);
+            border-color: crimson;
+            box-shadow: 0px 4px 15px rgba(220, 20, 60, 0.15);
+        }
+        .status-badge-Pending {
+            background-color: #f8de22;
+            color: black;
+            font-weight: bold;
+        }
+        .status-badge-Accepted {
+            background-color: #17594a;
+            color: white;
+            font-weight: bold;
+        }
+        .status-badge-Rejected {
+            background-color: #d80032;
+            color: white;
+            font-weight: bold;
+        }
+        .cta-btn-sm {
+            background-color: transparent;
+            color: var(--text-primary) !important;
+            border: 2px solid crimson;
+            font-size: 1.2rem;
+            text-transform: uppercase;
+            font-weight: bold;
+            letter-spacing: 0.05rem;
+            transition: 0.3s ease;
+            border-radius: 4px;
+            display: inline-block;
+            text-decoration: none !important;
+        }
+        .cta-btn-sm:hover {
+            background-color: crimson;
+            color: white;
+            box-shadow: 0px 0px 8px rgba(220, 20, 60, 0.4);
+        }
+    </style>
+</head>
+<body>
+
+  <!-- Dynamic Header Container (Injected by component-loader.js) -->
+  <div id="header"></div>
+
+  <div class="container" style="margin-top: 10rem; margin-bottom: 5rem; min-height: 70vh;">
+      <div class="row mb-4">
+          <div class="col-12 d-flex justify-content-between align-items-center border-bottom pb-3" style="border-color: var(--glass-border) !important;">
+              <div>
+                  <h2 style="font-family: 'Montserrat', sans-serif; font-size: 2.6rem; font-weight: 700; letter-spacing: 0.1rem; text-transform: uppercase;">
+                      Track <span style="color: crimson;">Orders</span>
+                  </h2>
+                  <h5 class="text-muted" style="font-size: 1.4rem;">Table ID: <span id="track-table-id">...</span> | Customer: <span id="track-customer-name">...</span></h5>
+              </div>
+              <div>
+                  <a href="customerMenu.html" class="btn cta-btn-sm py-2 px-3"><i class="fa fa-plus"></i> Order More Food</a>
+              </div>
+          </div>
+      </div>
+
+      <div id="success-banner" class="alert alert-success" style="display: none; background-color: #17594a; color: white; border: none; font-size: 1.4rem; margin-bottom: 2rem;">
+          <i class="fa fa-check-circle"></i> Your order request has been submitted successfully and is waiting for staff acceptance!
+      </div>
+
+      <div class="row justify-content-center">
+          <div class="col-md-9" id="orders-status-list">
+              <p style="text-align: center; padding: 40px; font-size: 1.4rem; color: #888;">Loading your placed orders...</p>
+          </div>
+      </div>
+  </div>
+
+  <!-- Dynamic Footer Container (Injected by component-loader.js) -->
+  <div id="footer"></div>
+
+  <script>
+      document.addEventListener("DOMContentLoaded", function () {
+          const tableId = localStorage.getItem("customer_table_id");
+          const customerName = localStorage.getItem("customer_name");
+          const customerMobile = localStorage.getItem("customer_mobile");
+
+          if (!tableId || !customerName || !customerMobile) {
+              window.location.href = "customerOrder.html";
+              return;
+          }
+
+          document.getElementById("track-table-id").textContent = tableId;
+          document.getElementById("track-customer-name").textContent = customerName;
+
+          // Check if order was placed successfully recently
+          const urlParams = new URLSearchParams(window.location.search);
+          if (urlParams.get('success') === '1') {
+              document.getElementById("success-banner").style.display = "block";
+              window.history.replaceState({}, document.title, window.location.pathname);
+          }
+
+          let menuItemsMap = {};
+
+          function init() {
+              if (typeof firebase === 'undefined' || !window.db) {
+                  setTimeout(init, 100);
+                  return;
+              }
+
+              // 1. Fetch menu cache to show names and prices of items
+              window.db.collection("menu").get().then(menuSnapshot => {
+                  menuSnapshot.forEach(doc => {
+                      menuItemsMap[doc.data().item_id] = doc.data();
+                  });
+                  
+                  // 2. Fetch Placed Orders
+                  loadOrders();
+              });
+          }
+
+          function loadOrders() {
+              window.db.collection("customer_orders")
+                  .where("table_id", "==", parseInt(tableId))
+                  .where("customer_name", "==", customerName)
+                  .where("customer_mobile", "==", customerMobile)
+                  .onSnapshot(querySnapshot => {
+                      const listElement = document.getElementById("orders-status-list");
+
+                      if (querySnapshot.empty) {
+                          listElement.innerHTML = `
+                              <div class="text-center py-5">
+                                  <h4 class="text-muted" style="font-size: 1.6rem;">You haven't placed any orders yet.</h4>
+                                  <a href="customerMenu.html" class="btn cta-btn-sm mt-3 px-4 py-2" style="font-size: 1.3rem;">Order Now</a>
+                              </div>
+                          `;
+                          return;
+                      }
+
+                      // Group orders by request_group_id
+                      const groups = {};
+                      querySnapshot.forEach(doc => {
+                          const order = doc.data();
+                          const grpId = order.request_group_id;
+
+                          if (!groups[grpId]) {
+                              groups[grpId] = {
+                                  order_time: order.order_time,
+                                  status: order.status,
+                                  items: []
+                              };
+                          }
+                          groups[grpId].items.push(order);
+                      });
+
+                      // Sort groups descending
+                      const sortedGroupIds = Object.keys(groups).sort((a, b) => parseInt(b) - parseInt(a));
+                      listElement.innerHTML = "";
+
+                      sortedGroupIds.forEach(grpId => {
+                          const group = groups[grpId];
+                          const status = group.status;
+                          
+                          let borderLeftColor = 'crimson';
+                          let badgeClass = "status-badge-" + status;
+                          let displayStatus = status;
+
+                          if (status === 'Pending') {
+                              borderLeftColor = '#f8de22';
+                          } else if (status === 'Accepted') {
+                              borderLeftColor = '#17594a';
+                          } else if (status === 'Rejected') {
+                              borderLeftColor = '#d80032';
+                              displayStatus = 'Cancelled';
+                          }
+
+                          let totalAmount = 0;
+                          let tableRows = "";
+
+                          group.items.forEach(item => {
+                              const menuItem = menuItemsMap[item.item_id];
+                              const name = menuItem ? menuItem.item_name : item.item_id;
+                              const price = menuItem ? menuItem.item_price : 0;
+                              const subtotal = price * item.quantity;
+                              totalAmount += subtotal;
+
+                              tableRows += `
+                                   <tr>
+                                       <td style="color: var(--text-primary) !important; font-weight: bold; padding: 8px 0;">${name}</td>
+                                       <td class="text-center" style="padding: 8px 0; color: var(--text-primary) !important;">${item.quantity}</td>
+                                       <td class="text-right" style="padding: 8px 0; color: var(--text-secondary) !important;">Rs ${price.toFixed(2)}</td>
+                                       <td class="text-right" style="padding: 8px 0; color: var(--text-primary) !important; font-weight: bold;">Rs ${subtotal.toFixed(2)}</td>
+                                   </tr>
+                               `;
+                          });
+
+                          const card = document.createElement("div");
+                          card.className = "card status-card p-4 mb-4 shadow-sm";
+                          card.style.borderLeft = `5px solid ${borderLeftColor}`;
+                          card.innerHTML = `
+                                  <div class="d-flex justify-content-between align-items-center mb-3">
+                                      <div>
+                                          <h5 class="font-weight-bold mb-0" style="font-size: 1.6rem; color: var(--text-primary) !important;">Order Ref: #${grpId}</h5>
+                                          <small class="text-muted" style="color: var(--text-secondary) !important;"><i class="fa fa-clock-o"></i> Placed at: ${new Date(group.order_time).toLocaleString()}</small>
+                                      </div>
+                                      <div>
+                                          <span class="badge ${badgeClass} px-3 py-2" style="font-size: 1.1rem; border-radius: 20px;">
+                                              ${displayStatus}
+                                          </span>
+                                      </div>
+                                  </div>
+
+                                  <div class="order-items border-top pt-2" style="border-color: var(--glass-border) !important;">
+                                      <table class="table table-borderless table-sm text-muted mb-0" style="font-size: 1.3rem;">
+                                          <thead>
+                                              <tr style="color: var(--text-secondary) !important;">
+                                              <th>Item Name</th>
+                                              <th class="text-center" style="width: 80px;">Qty</th>
+                                              <th class="text-right" style="width: 100px;">Price</th>
+                                              <th class="text-right" style="width: 120px;">Subtotal</th>
+                                          </tr>
+                                      </thead>
+                                      <tbody>
+                                          ${tableRows}
+                                      </tbody>
+                                  </table>
+                                  </div>
+
+                                  <div class="border-top mt-3 pt-3 d-flex justify-content-between align-items-center" style="border-color: var(--glass-border) !important;">
+                                      <span class="text-muted" style="font-size: 1.4rem; color: var(--text-secondary) !important;">Total Amount:</span>
+                                  <h4 class="font-weight-bold mb-0" style="color: crimson; font-size: 2rem;">Rs ${totalAmount.toFixed(2)}</h4>
+                              </div>
+                          `;
+                          listElement.appendChild(card);
+                      });
+                  }, err => {
+                      console.error("Order listener failed:", err);
+                  });
+          }
+
+          init();
+      });
+  </script>
+</body>
+</html>

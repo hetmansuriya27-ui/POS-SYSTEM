@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../css/style.css?v=1.1">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/owl-carousel/1.3.3/owl.carousel.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/owl-carousel/1.3.3/owl.theme.min.css">
+    
+    <!-- Firebase SDK Compat CDN (REQUIRED FIRST) -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics-compat.js"></script>
+    
+    <script src="../js/firebase-config.js"></script>
+    
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    
+    <script src="../js/component-loader.js"></script>
+
+    <title>Home - X Hotel</title>
+    
+    <style>
+        .cta-primary {
+            background-color: crimson !important;
+            border-color: crimson !important;
+            color: white !important;
+        }
+        .cta-primary:hover {
+            background-color: transparent !important;
+            color: crimson !important;
+            border-color: crimson !important;
+            box-shadow: 0 0 15px rgba(220, 20, 60, 0.4);
+        }
+        .menu-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-gap: 24px;
+            font-family: 'Outfit', sans-serif;
+            margin-top: 25px;
+            padding: 25px;
+            color: var(--text-primary);
+            overflow-x: hidden;
+            overflow-y: auto;
+            height: 450px;
+            background: var(--glass-panel) !important;
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border) !important;
+            border-radius: 20px;
+            box-shadow: var(--shadow-card) !important;
+        }
+        @media (max-width: 768px) {
+            .menu-grid {
+                grid-template-columns: 1fr;
+                height: auto;
+            }
+        }
+        .item-name {
+            color: var(--text-primary) !important;
+            font-size: 1.4rem;
+        }
+        .item-price {
+            color: crimson !important;
+            float: right;
+            font-weight: bold;
+            font-size: 1.4rem;
+        }
+    </style>
+</head>
+<body>
+
+  <!-- Dynamic Header Container (Injected by component-loader.js) -->
+  <div id="header"></div>
+
+  <!-- Hero Section with Video Background and Text Overlay -->
+  <section id="hero" style="position: relative;">
+      <video autoplay loop muted playsinline poster="your-poster-image.jpg" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover;">
+          <source src="../image/SteakOnGrillCloseup.mp4" type="video/mp4">
+      </video>
+      <div class="hero container" style="position: relative; z-index: 1;">
+          <div>
+              <h1><strong><h1 class="text-center" style="font-family:Copperplate; color:whitesmoke;">X HOTEL</h1><span></span></strong></h1>
+              <h1><strong style="color:white;">DINING & BAR<span></span></strong></h1>
+              <a href="#projects" type="button" class="cta">MENU</a>
+              <a href="../CustomerReservation/reservePage.html" type="button" class="cta cta-primary" style="margin-left: 10px;">RESERVATION</a>
+          </div>
+      </div>
+  </section>
+  <!-- End Hero Section -->
+  
+  <!-- menu Section -->
+  <section id="projects">
+    <div class="projects container">
+      <div class="projects-header">
+        <h1 class="section-title">Me<span>n</span>u</h1>
+      </div>
+     
+      <!-- ALL ITEMS (Main Dish + Sides + Drinks in columns side-by-side) -->
+      <div class="menu-grid">
+        <div class="drinks">
+          <h1 style="text-align:center; font-family: 'Montserrat', sans-serif; font-weight: bold; margin-bottom: 20px; color: var(--text-primary) !important;">DRINKS</h1>
+          <div id="drinks-container">
+            <p style="text-align:center; padding:20px; font-size:1.1em; color:var(--text-secondary);">Loading menu...</p>
+          </div>
+        </div>
+
+        <div class="sideDish">
+          <h1 style="text-align:center; font-family: 'Montserrat', sans-serif; font-weight: bold; margin-bottom: 20px; color: var(--text-primary) !important;">SIDE DISHES</h1>
+          <div id="sides-container">
+            <p style="text-align:center; padding:20px; font-size:1.1em; color:var(--text-secondary);">Loading menu...</p>
+          </div>
+        </div>
+
+        <div class="mainDish">
+          <h1 style="text-align:center; font-family: 'Montserrat', sans-serif; font-weight: bold; margin-bottom: 20px; color: var(--text-primary) !important;">MAIN DISH</h1>
+          <div id="main-dishes-container">
+            <p style="text-align:center; padding:20px; font-size:1.1em; color:var(--text-secondary);">Loading menu...</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+  <!-- End menu Section -->
+
+  <!-- About Section -->
+  <section id="about">
+    <div class="about container">
+      <div class="col-right">
+          <h1 class="section-title">About <span>Us</span></h1>
+          <h2>X Hotel Company History:</h2>
+          <p>X Hotel is a well-established Western food establishment in the city's heart. X Hotel has become a popular choice for customers looking to celebrate special occasions or simply enjoy a relaxing meal, with a focus on providing delicious meals and a friendly dining experience.</p>
+          <p>X Hotel, as a Western restaurant, offers a diverse menu that caters to a variety of tastes. The menu includes a wide range of options such as bar bites, salads, soups and a variety of main courses. Customers can savour succulent options such as steak and ribs, chicken, lamb, seafood, burgers and sandwiches, pasta, and a variety of delectable side dishes. The menu has been carefully curated to offer a balance of classic favourites and innovative creations, ensuring that every palate is satisfied.</p>
+          <p>X Hotel's ability to accommodate customers is one of its distinguishing features. X Hotel strives to create an inviting and comfortable dining environment, whether guests prefer to walk in or make reservations in advance. The restaurant recognises the significance of creating memorable experiences, particularly for those celebrating special occasions. X Hotel is a popular choice for families, couples, and groups of friends because of its attentive staff and welcoming atmosphere.</p>
+          <p>X Hotel has an inviting outdoor bar that is open seven days a week from 11:00 AM to 10:00 PM in addition to the indoor dining area.This outdoor space provides a relaxed setting for patrons to unwind and socialise while sipping on their favourite drinks and nibbling on bar bites. The bar serves a wide range of beverages, including cocktails, wines, beers and non-alcoholic options.</p>
+      </div>
+    </div>
+  </section>
+  <!-- End About Section -->
+  
+  <!-- Contact Section -->
+  <section id="contact">
+    <div class="contact container">
+      <div>
+        <h1 class="section-title">Contact <span>info</span></h1>
+      </div>
+      <div class="contact-items">
+        <div class="contact-item contact-item-bg">
+          <div class="contact-info">
+            <div class='icon'><img src="../image/icons8-phone-100.png" alt=""/></div>
+            <h1>Phone</h1>
+            <h2>+60 886 8786</h2>
+          </div>
+        </div>
+        
+        <div class="contact-item contact-item-bg"> 
+          <div class="contact-info">
+            <div class='icon'><img src="../image/icons8-email-100.png" alt=""/></div>
+            <h1>Email</h1>
+            <h2>contact@xhotel.com</h2> 
+          </div>
+        </div>
+        
+        <div class="contact-item contact-item-bg">
+          <div class="contact-info">
+            <div class='icon'> <img src="../image/icons8-home-address-100.png" alt=""/></div>
+            <h1>Address</h1>
+            <h2>Lot 62, Third Floor, Jalan Newton, No.345, Lorong Kluang, Kota Kinabalu, Malaysia, 88000</h2>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+  <!-- End Contact Section -->
+
+  <!-- Dynamic Footer Container (Injected by component-loader.js) -->
+  <div id="footer"></div>
+
+  <!-- Dynamic Firestore Menu Fetcher Script -->
+  <script type="text/javascript">
+    document.addEventListener("DOMContentLoaded", function () {
+      function loadMenuFromFirestore() {
+        if (typeof firebase === 'undefined' || !window.db) {
+          setTimeout(loadMenuFromFirestore, 100);
+          return;
+        }
+
+        window.db.collection("menu")
+          .where("status", "==", "Active")
+          .get()
+          .then(querySnapshot => {
+            const mainDishes = [];
+            const sides = [];
+            const drinks = [];
+
+            querySnapshot.forEach(doc => {
+              const item = doc.data();
+              if (item.item_category === "Main Dish") {
+                mainDishes.push(item);
+              } else if (item.item_category === "Side Snacks") {
+                sides.push(item);
+              } else if (item.item_category === "Drinks") {
+                drinks.push(item);
+              }
+            });
+
+            // Helper function to sort item IDs naturally (e.g. D1, D2, D10)
+            const sortItems = (a, b) => {
+              return a.item_id.localeCompare(b.item_id, undefined, { numeric: true, sensitivity: 'base' });
+            };
+
+            mainDishes.sort(sortItems);
+            sides.sort(sortItems);
+            drinks.sort(sortItems);
+
+            // Render Main Dish
+            const renderItems = (itemsList, containers) => {
+              containers.forEach(containerId => {
+                const el = document.getElementById(containerId);
+                if (!el) return;
+                el.innerHTML = "";
+                if (itemsList.length === 0) {
+                  el.innerHTML = "<p style='text-align:center; color:var(--text-secondary);'>No items available.</p>";
+                  return;
+                }
+                itemsList.forEach(item => {
+                  const p = document.createElement("p");
+                  p.innerHTML = `
+                    <span class="item-name"><strong>${item.item_name}</strong></span>
+                    <span class="item-price">Rs${item.item_price.toFixed(2)}</span><br>
+                    <hr style="border:0; border-top: 1px dashed var(--glass-border) !important; margin: 5px 0 10px 0;">
+                  `;
+                  el.appendChild(p);
+                });
+              });
+            };
+
+            renderItems(mainDishes, ["main-dishes-container"]);
+            renderItems(sides, ["sides-container"]);
+            renderItems(drinks, ["drinks-container"]);
+          })
+          .catch(error => {
+            console.error("Error loading Firestore menu:", error);
+            const errMsg = "<p style='text-align:center; color:crimson;'>Failed to load menu items.</p>";
+            document.getElementById("main-dishes-container").innerHTML = errMsg;
+            document.getElementById("sides-container").innerHTML = errMsg;
+            document.getElementById("drinks-container").innerHTML = errMsg;
+          });
+      }
+
+      loadMenuFromFirestore();
+    });
+  </script>
+</body>
+</html>

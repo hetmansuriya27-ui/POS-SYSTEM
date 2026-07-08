@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Reservation Receipt - X Hotel</title>
+    <link rel="stylesheet" href="../css/style.css?v=1.1">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    
+    <!-- Firebase SDK Compat CDN -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics-compat.js"></script>
+    <script src="../js/firebase-config.js"></script>
+    <script src="../js/component-loader.js"></script>
+
+    <style>
+        body {
+            font-family: 'Nunito Sans', 'Arial', sans-serif;
+            background: var(--bg-workspace) !important;
+            color: var(--text-primary) !important;
+            padding: 40px 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .receipt-card {
+            background: var(--glass-panel) !important;
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: var(--shadow-card) !important;
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+            border: 1px solid var(--glass-border) !important;
+        }
+
+        .header-logo {
+            text-align: center;
+            font-family: 'Copperplate', 'Arial Black', sans-serif;
+            font-weight: 900;
+            font-size: 28px;
+            margin-bottom: 5px;
+            color: var(--text-primary) !important;
+            text-decoration: none;
+            display: block;
+        }
+
+        .header-title {
+            text-align: center;
+            font-size: 18px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            background-color: var(--bg-workspace) !important;
+            border: 1px solid var(--glass-border) !important;
+            color: var(--text-primary) !important;
+            padding: 10px;
+            border-radius: 4px;
+            margin-top: 15px;
+            margin-bottom: 25px;
+        }
+
+        .table-receipt {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 25px;
+        }
+
+        .table-receipt th, .table-receipt td {
+            border: 1px solid var(--glass-border) !important;
+            padding: 12px 15px;
+            text-align: left;
+        }
+
+        .table-receipt th {
+            background-color: var(--bg-workspace) !important;
+            width: 35%;
+            font-weight: bold;
+            color: var(--text-secondary) !important;
+        }
+
+        .table-receipt td {
+            color: var(--text-primary) !important;
+            font-weight: 500;
+        }
+
+        .btn-print {
+            background-color: transparent;
+            border: 2px solid crimson;
+            color: var(--text-primary) !important;
+            padding: 12px 24px;
+            font-weight: bold;
+            font-size: 16px;
+            width: 100%;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .btn-print:hover {
+            background-color: crimson;
+            border-color: crimson;
+            color: white !important;
+            box-shadow: 0px 0px 12px rgba(220, 20, 60, 0.5);
+        }
+
+        /* Hides elements when printing (generating PDF) */
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+            }
+            .receipt-card {
+                box-shadow: none;
+                border: none;
+                padding: 0;
+                margin: 0;
+                max-width: 100%;
+            }
+            .no-print {
+                display: none !important;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="receipt-card">
+        <a href="../home/home.html#hero" class="header-logo no-print">
+            X HOTEL
+        </a>
+        <div class="header-logo print-only" style="display: none; text-align: center; font-family: 'Copperplate', sans-serif; font-size: 28px; font-weight: bold;">
+            X HOTEL
+        </div>
+
+        <div class="header-title">
+            Reservation Information
+        </div>
+
+        <div id="receipt-content">
+            <p style="text-align: center; padding: 30px; font-size: 16px; color: #666;">Loading reservation details...</p>
+        </div>
+
+        <div class="no-print" style="margin-top: 20px;">
+            <button onclick="window.print()" class="btn btn-print mb-3">
+                <i class="fa fa-print"></i> Print Receipt / Download PDF
+            </button>
+            <div style="text-align: center;">
+                <a href="../home/home.html" style="color: var(--text-primary) !important; text-decoration: underline; font-size: 14px; font-weight: bold;">Back to Home</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            function loadReceipt() {
+                if (!window.db) {
+                    setTimeout(loadReceipt, 100);
+                    return;
+                }
+
+                // Get reservation_id from query params
+                const params = new URLSearchParams(window.location.search);
+                const reservationId = params.get('reservation_id');
+
+                if (!reservationId) {
+                    document.getElementById("receipt-content").innerHTML = `
+                        <div class="alert alert-danger text-center">
+                            Invalid or missing Reservation ID.
+                        </div>
+                    `;
+                    return;
+                }
+
+                // Query Firestore reservations
+                window.db.collection("reservations").doc(reservationId).get()
+                    .then(doc => {
+                        if (doc.exists) {
+                            const res = doc.data();
+                            
+                            document.getElementById("receipt-content").innerHTML = `
+                                <table class="table-receipt">
+                                    <tr>
+                                        <th>Reservation ID:</th>
+                                        <td>${res.reservation_id}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Customer Name:</th>
+                                        <td>${res.customer_name}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Phone Number:</th>
+                                        <td>${res.phone_number}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Table ID:</th>
+                                        <td>${res.table_id}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Reservation Time:</th>
+                                        <td>${res.reservation_time}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Reservation Date:</th>
+                                        <td>${res.reservation_date}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Head Count:</th>
+                                        <td>${res.head_count}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Special Request:</th>
+                                        <td>${res.special_request || 'None'}</td>
+                                    </tr>
+                                </table>
+                            `;
+                        } else {
+                            document.getElementById("receipt-content").innerHTML = `
+                                <div class="alert alert-danger text-center">
+                                    Reservation not found (ID: ${reservationId}).
+                                </div>
+                            `;
+                        }
+                    })
+                    .catch(error => {
+                        console.error("Receipt loading error:", error);
+                        document.getElementById("receipt-content").innerHTML = `
+                            <div class="alert alert-danger text-center">
+                                Failed to fetch reservation details.
+                            </div>
+                        `;
+                    });
+            }
+
+            loadReceipt();
+        });
+    </script>
+</body>
+</html>

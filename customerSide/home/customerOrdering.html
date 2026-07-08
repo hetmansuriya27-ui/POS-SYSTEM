@@ -1,0 +1,1390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Food - X Hotel</title>
+    
+    <!-- Google Fonts & FontAwesome -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Firebase SDK Compat CDN -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics-compat.js"></script>
+    <script src="../js/firebase-config-ordering.js"></script>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="../js/component-loader.js"></script>
+
+    <style>
+        :root {
+            --primary: #F43F5E; /* Rose / Pink-Red */
+            --primary-hover: #E11D48;
+            --primary-light: #FFE4E6;
+            --bg-body: #FAFAFA;
+            --text-dark: #0F172A;
+            --text-muted: #64748B;
+            --border-color: #E2E8F0;
+            --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.04);
+            --shadow-md: 0 10px 25px rgba(0, 0, 0, 0.05);
+            --shadow-lg: 0 20px 40px rgba(244, 63, 94, 0.1);
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-dark);
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+        }
+
+        /* Clean Top Category Selector Bar (No Welcome Header at top!) */
+        .category-container {
+            padding: 20px 5% 15px 5%;
+            background-color: #ffffff;
+            border-bottom: 1px solid var(--border-color);
+            overflow-x: auto;
+            white-space: nowrap;
+            scrollbar-width: none; /* Hide scrollbar for Firefox */
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .category-container::-webkit-scrollbar {
+            display: none; /* Hide scrollbar for Chrome/Safari */
+        }
+
+        .category-tabs {
+            display: inline-flex;
+            gap: 12px;
+        }
+
+        .category-tab {
+            padding: 10px 20px;
+            background-color: #F8FAFC;
+            border: 1px solid var(--border-color);
+            border-radius: 25px;
+            color: var(--text-muted);
+            font-weight: 700;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            text-transform: capitalize;
+            text-decoration: none !important;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .category-tab:hover {
+            color: var(--text-dark);
+            border-color: var(--text-muted);
+            transform: translateY(-1px);
+        }
+
+        .category-tab.active {
+            background: linear-gradient(135deg, var(--primary), var(--primary-hover));
+            color: #ffffff !important;
+            border-color: var(--primary);
+            box-shadow: 0 4px 12px rgba(244, 63, 94, 0.25);
+        }
+
+        /* Menu Food Grid (Image 1 Style) */
+        .menu-grid-section {
+            padding: 30px 5% 100px 5%;
+        }
+
+        .section-heading {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 800;
+            font-size: 1.8rem;
+            color: var(--text-dark);
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .food-card {
+            background-color: #ffffff;
+            border-radius: 20px;
+            border: 1px solid rgba(226, 232, 240, 0.8);
+            box-shadow: var(--shadow-sm);
+            overflow: hidden;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .food-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-md);
+            border-color: var(--primary-light);
+        }
+
+        .food-image-wrapper {
+            width: 100%;
+            height: 170px;
+            overflow: hidden;
+            position: relative;
+            background-color: #F1F5F9;
+        }
+
+        .food-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s ease;
+        }
+
+        .food-card:hover .food-image {
+            transform: scale(1.05);
+        }
+
+        /* Star Rating Badge on Card (top right) */
+        .card-rating-badge {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background-color: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(4px);
+            padding: 4px 8px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--text-dark);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+            z-index: 2;
+        }
+
+        .card-body-content {
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+        }
+
+        .food-title {
+            font-weight: 700;
+            font-size: 1.15rem;
+            color: var(--text-dark);
+            margin-bottom: 6px;
+            line-height: 1.35;
+        }
+
+        .food-desc {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            line-height: 1.5;
+            margin-bottom: 15px;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            height: 2.55rem;
+        }
+
+        .card-bottom-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: auto;
+        }
+
+        .food-price {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 800;
+            font-size: 1.3rem;
+            color: var(--text-dark);
+        }
+
+        /* Circular Plus Add Button (Image 1 Style) */
+        .add-plus-btn {
+            background-color: var(--primary);
+            color: #ffffff !important;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(244, 63, 94, 0.25);
+            transition: all 0.2s ease;
+        }
+
+        .add-plus-btn:hover {
+            background-color: var(--primary-hover);
+            transform: scale(1.08);
+            box-shadow: 0 6px 14px rgba(244, 63, 94, 0.35);
+        }
+
+        .add-plus-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* Floating Cart bar (bottom of mobile layout) */
+        .floating-cart-bar {
+            position: fixed;
+            bottom: 24px;
+            left: 5%;
+            right: 5%;
+            background: linear-gradient(135deg, var(--text-dark), #1E293B);
+            color: #ffffff;
+            border-radius: 30px;
+            padding: 16px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+            z-index: 1000;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .floating-cart-bar:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 14px 35px rgba(0, 0, 0, 0.3);
+        }
+
+        .floating-cart-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .floating-cart-icon {
+            background-color: var(--primary);
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            position: relative;
+        }
+
+        .floating-cart-count {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background-color: #ffffff;
+            color: var(--primary);
+            font-size: 0.75rem;
+            font-weight: 800;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+        }
+
+        .floating-cart-total {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 800;
+            font-size: 1.15rem;
+        }
+
+        .floating-cart-right {
+            font-weight: 700;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05rem;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* Slide-over Cart & History Drawer */
+        .cart-drawer-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(4px);
+            z-index: 2000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .cart-drawer-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .cart-drawer {
+            position: fixed;
+            top: 0;
+            right: -440px;
+            width: 100%;
+            max-width: 440px;
+            height: 100vh;
+            background-color: #ffffff;
+            box-shadow: -10px 0 40px rgba(0, 0, 0, 0.1);
+            z-index: 2001;
+            display: flex;
+            flex-direction: column;
+            transition: right 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .cart-drawer.active {
+            right: 0;
+        }
+
+        .cart-drawer-header {
+            padding: 20px 20px 10px 20px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .cart-drawer-title {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 700;
+            font-size: 1.3rem;
+            color: var(--text-dark);
+            margin: 0;
+        }
+
+        .exit-session-icon-btn {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: color 0.2s;
+            margin-right: 12px;
+        }
+
+        .exit-session-icon-btn:hover {
+            color: var(--primary);
+        }
+
+        .cart-drawer-close {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 1.25rem;
+            cursor: pointer;
+            padding: 4px;
+        }
+
+        /* Unified Drawer Tabs */
+        .drawer-tabs-wrapper {
+            background-color: #F8FAFC;
+            padding: 8px 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .drawer-nav-pills {
+            display: flex;
+            background: #E2E8F0;
+            padding: 3px;
+            border-radius: 12px;
+            border: none;
+        }
+
+        .drawer-pill-item {
+            flex: 1;
+            text-align: center;
+        }
+
+        .drawer-pill-link {
+            display: block;
+            padding: 8px 12px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            border-radius: 9px;
+            text-decoration: none !important;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+
+        .drawer-pill-link.active {
+            background-color: #ffffff;
+            color: var(--text-dark);
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+        }
+
+        /* Content Scroll containers */
+        .drawer-tab-content-container {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 20px;
+        }
+
+        .drawer-tab-pane {
+            display: none;
+        }
+
+        .drawer-tab-pane.active {
+            display: block;
+        }
+
+        /* Cart & Placed Orders List Items (Image 2 style) */
+        .cart-item-row {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding-bottom: 16px;
+            margin-bottom: 16px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .cart-item-thumb-wrapper {
+            width: 60px;
+            height: 60px;
+            border-radius: 12px;
+            overflow: hidden;
+            background-color: #F1F5F9;
+            flex-shrink: 0;
+        }
+
+        .cart-item-thumb {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .cart-item-info {
+            flex-grow: 1;
+        }
+
+        .cart-item-name {
+            font-weight: 700;
+            font-size: 0.95rem;
+            color: var(--text-dark);
+            margin-bottom: 2px;
+            line-height: 1.35;
+        }
+
+        .cart-item-desc {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            line-height: 1.35;
+            display: -webkit-box;
+            -webkit-line-clamp: 1;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .cart-item-price-side {
+            text-align: right;
+            flex-shrink: 0;
+        }
+
+        .cart-item-subtotal {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 700;
+            font-size: 0.95rem;
+            color: var(--text-dark);
+            margin-bottom: 4px;
+        }
+
+        .qty-controller {
+            display: inline-flex;
+            align-items: center;
+            border: 1px solid var(--border-color);
+            background-color: #F8FAFC;
+            border-radius: 15px;
+            padding: 2px 4px;
+            gap: 8px;
+        }
+
+        .qty-ctrl-btn {
+            background: none;
+            border: none;
+            color: var(--text-dark);
+            width: 24px;
+            height: 24px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            cursor: pointer;
+            border-radius: 50%;
+            transition: background-color 0.2s;
+        }
+
+        .qty-ctrl-btn:hover {
+            background-color: #E2E8F0;
+        }
+
+        .qty-ctrl-val {
+            font-size: 0.85rem;
+            font-weight: 700;
+            min-width: 16px;
+            text-align: center;
+        }
+
+        /* Cart Footer block */
+        .cart-drawer-footer {
+            padding: 20px;
+            border-top: 1px solid var(--border-color);
+            background-color: #ffffff;
+        }
+
+        .cart-summary-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 6px;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        .cart-summary-total {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 12px;
+            margin-bottom: 20px;
+            border-top: 1px solid var(--border-color);
+            padding-top: 16px;
+        }
+
+        .total-label {
+            font-weight: 700;
+            font-size: 1rem;
+            color: var(--text-dark);
+        }
+
+        .total-amount {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 800;
+            font-size: 1.45rem;
+            color: var(--primary);
+        }
+
+        .checkout-btn {
+            background: linear-gradient(135deg, var(--primary), var(--primary-hover));
+            color: #ffffff !important;
+            border: none;
+            border-radius: 30px;
+            padding: 15px;
+            font-weight: 700;
+            font-size: 1rem;
+            letter-spacing: 0.05rem;
+            text-transform: uppercase;
+            box-shadow: var(--shadow-lg);
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .checkout-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 30px rgba(244, 63, 94, 0.35);
+        }
+
+        .checkout-btn:active {
+            transform: translateY(0);
+        }
+
+        /* Toast Popup notification */
+        .custom-toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background-color: #0F172A;
+            color: #ffffff;
+            padding: 12px 24px;
+            border-radius: 16px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+            z-index: 3000;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            opacity: 0;
+            transform: translateY(-20px);
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            pointer-events: none;
+        }
+
+        .custom-toast.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Floating "My Orders History" pill (top right) */
+        .my-orders-floating-btn {
+            position: fixed;
+            top: 15px;
+            right: 5%;
+            background-color: #ffffff;
+            color: var(--text-dark);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 8px 16px;
+            font-weight: 700;
+            font-size: 0.82rem;
+            box-shadow: var(--shadow-sm);
+            z-index: 99;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+        }
+
+        .my-orders-floating-btn:hover {
+            background-color: #F8FAFC;
+            border-color: var(--text-muted);
+            transform: translateY(-1px);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Floating Order History tab trigger (Sleek, matching image cleanup) -->
+    <button class="my-orders-floating-btn" onclick="openDrawerTab('orders')">
+        <i class="fa-solid fa-list-check welcome-accent"></i> My Orders
+    </button>
+
+    <!-- Category scroll selector (starts cleanly at top) -->
+    <div class="category-container">
+        <div class="category-tabs" id="menuTabs">
+            <a class="category-tab active" data-category="all" href="#"><i class="fa-solid fa-bowl-food"></i> All Menu</a>
+            <a class="category-tab" data-category="Drinks" href="#"><i class="fa-solid fa-glass-water"></i> Drinks</a>
+            <a class="category-tab" data-category="Side Snacks" href="#"><i class="fa-solid fa-burger"></i> Side Snacks</a>
+            <a class="category-tab" data-category="Main Dish" href="#"><i class="fa-solid fa-utensils"></i> Main Dish</a>
+        </div>
+    </div>
+
+    <!-- Dynamic Food List Grid Section -->
+    <div class="menu-grid-section">
+        <!-- Success Banner -->
+        <div id="success-banner" class="alert alert-success border-0 rounded-lg p-3 mb-4" style="display: none; background-color: #ECFDF5; color: #065F46; font-size: 0.95rem; box-shadow: var(--shadow-sm);">
+            <div class="d-flex align-items-start gap-2">
+                <i class="fa-solid fa-circle-check text-success mr-2 mt-1"></i>
+                <div>
+                    <strong>Order Placed!</strong> Your items have been successfully queued in the kitchen.
+                </div>
+            </div>
+        </div>
+        <div id="error-banner" class="alert alert-danger border-0 rounded-lg p-3 mb-4" style="display: none; background-color: #FEF2F2; color: #991B1B; font-size: 0.95rem; box-shadow: var(--shadow-sm);"></div>
+
+        <div class="section-heading">
+            <span>Our Menu</span>
+            <span style="font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: #ffffff; border: 1px solid var(--border-color); padding: 4px 12px; border-radius: 15px;" id="menu-items-count">0 items</span>
+        </div>
+
+        <div class="row" id="food-menu-row">
+            <!-- Dynamic food cards will load here -->
+            <div class="col-12 text-center py-5" id="menu-loader">
+                <i class="fa-solid fa-spinner fa-spin fa-2x text-muted mb-2"></i>
+                <h6 class="text-muted font-weight-bold">Loading active menu items...</h6>
+            </div>
+        </div>
+    </div>
+
+    <!-- Floating Cart Bar (bottom of screen) -->
+    <div class="floating-cart-bar" id="floating-cart" style="display: none;" onclick="openDrawerTab('cart')">
+        <div class="floating-cart-left">
+            <div class="floating-cart-icon">
+                <i class="fa-solid fa-bag-shopping"></i>
+                <span class="floating-cart-count" id="cart-badge-count">0</span>
+            </div>
+            <div>
+                <div style="font-size: 0.75rem; opacity: 0.8; font-weight: 600; text-transform: uppercase;">View Cart</div>
+                <div class="floating-cart-total" id="cart-badge-total">Rs 0.00</div>
+            </div>
+        </div>
+        <div class="floating-cart-right">
+            Checkout <i class="fa-solid fa-chevron-right" style="font-size: 0.85rem;"></i>
+        </div>
+    </div>
+
+    <!-- Slide-over Cart Drawer -->
+    <div class="cart-drawer-overlay" id="cart-overlay" onclick="closeCartDrawer()"></div>
+    <div class="cart-drawer" id="cart-drawer">
+        <div class="cart-drawer-header">
+            <h5 class="cart-drawer-title"><i class="fa-solid fa-store welcome-accent mr-1"></i> Table <span id="drawer-table-no">...</span></h5>
+            <div>
+                <button class="exit-session-icon-btn" onclick="exitSession()" title="Exit Session"><i class="fa-solid fa-right-from-bracket"></i></button>
+                <button class="cart-drawer-close" onclick="closeCartDrawer()"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+        </div>
+
+        <!-- Dynamic Unified Drawer Tabs -->
+        <div class="drawer-tabs-wrapper">
+            <div class="drawer-nav-pills">
+                <div class="drawer-pill-item">
+                    <a class="drawer-pill-link active" id="tab-cart-btn" onclick="switchDrawerTab('cart')">My Cart</a>
+                </div>
+                <div class="drawer-pill-item">
+                    <a class="drawer-pill-link" id="tab-orders-btn" onclick="switchDrawerTab('orders')">Order Status</a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Scrollable Tab Content Areas -->
+        <div class="drawer-tab-content-container">
+            <!-- TAB 1: CART ITEMS -->
+            <div class="drawer-tab-pane active" id="pane-cart">
+                <div id="cart-drawer-items-list">
+                    <p class="text-muted text-center py-5">Your cart is empty.</p>
+                </div>
+            </div>
+
+            <!-- TAB 2: PLACED ORDERS (Image 2 style list view showing progress) -->
+            <div class="drawer-tab-pane" id="pane-orders">
+                <div id="placed-orders-list-container">
+                    <p class="text-muted text-center py-5">No orders placed yet.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer Checkout panel (only shows when cart tab is active) -->
+        <div class="cart-drawer-footer" id="cart-footer-panel">
+            <div class="cart-summary-row">
+                <span>Subtotal</span>
+                <span id="cart-subtotal">Rs 0.00</span>
+            </div>
+            <div class="cart-summary-row">
+                <span>Service Tax (10%)</span>
+                <span id="cart-tax">Rs 0.00</span>
+            </div>
+            <div class="cart-summary-total">
+                <span class="total-label">Grand Total</span>
+                <span class="total-amount" id="cart-grandtotal">Rs 0.00</span>
+            </div>
+            <button class="checkout-btn" id="place-order-btn" onclick="placeOrder()">
+                <i class="fa-solid fa-utensils"></i> Place Kitchen Order
+            </button>
+        </div>
+    </div>
+
+    <!-- Custom Toast Notification -->
+    <div class="custom-toast" id="toast-notif">
+        <i class="fa-solid fa-circle-check text-success"></i>
+        <span id="toast-message">Item added to cart!</span>
+    </div>
+
+    <!-- Scripts -->
+    <script>
+        // Unsplash Stock Food Image Map based on Item Name & Category (matches UI Mockup style)
+        function getFoodImage(itemName, category) {
+            const query = encodeURIComponent(itemName.toLowerCase());
+            
+            if (query.includes("pizza") || query.includes("margherita") || query.includes("capricciosa")) {
+                return "https://images.unsplash.com/photo-1513104890138-7c749659a591?w=500&auto=format&fit=crop&q=60";
+            }
+            if (query.includes("burger") || query.includes("hamburger") || query.includes("cheeseburger")) {
+                return "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=500&auto=format&fit=crop&q=60";
+            }
+            if (query.includes("steak") || query.includes("beef") || query.includes("ribs")) {
+                return "https://images.unsplash.com/photo-1544025162-d76694265947?w=500&auto=format&fit=crop&q=60";
+            }
+            if (query.includes("chicken") || query.includes("wings") || query.includes("nuggets")) {
+                return "https://images.unsplash.com/photo-1569058242253-92a9c755a0ec?w=500&auto=format&fit=crop&q=60";
+            }
+            if (query.includes("pasta") || query.includes("spaghetti") || query.includes("lasagna")) {
+                return "https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=500&auto=format&fit=crop&q=60";
+            }
+            if (query.includes("salad") || query.includes("caesar")) {
+                return "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=500&auto=format&fit=crop&q=60";
+            }
+            if (query.includes("fries") || query.includes("chips")) {
+                return "https://images.unsplash.com/photo-1573080496219-bb080dd4f877?w=500&auto=format&fit=crop&q=60";
+            }
+            if (query.includes("soup") || query.includes("broth")) {
+                return "https://images.unsplash.com/photo-1547592165-e1d17fed6006?w=500&auto=format&fit=crop&q=60";
+            }
+            if (query.includes("coffee") || query.includes("espresso") || query.includes("latte")) {
+                return "https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=500&auto=format&fit=crop&q=60";
+            }
+            if (query.includes("tea") || query.includes("iced")) {
+                return "https://images.unsplash.com/photo-1556679343-c7306c1976bc?w=500&auto=format&fit=crop&q=60";
+            }
+            if (query.includes("juice") || query.includes("smoothie") || query.includes("lemonade")) {
+                return "https://images.unsplash.com/photo-1536882240095-0379873feb4e?w=500&auto=format&fit=crop&q=60";
+            }
+            if (query.includes("beer") || query.includes("wine") || query.includes("cocktail")) {
+                return "https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=500&auto=format&fit=crop&q=60";
+            }
+            if (query.includes("coke") || query.includes("sprite") || query.includes("soda") || query.includes("fanta")) {
+                return "https://images.unsplash.com/photo-1622483767028-3f66f32aef97?w=500&auto=format&fit=crop&q=60";
+            }
+            
+            // Category Fallbacks
+            if (category === "Main Dish") {
+                return "https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=500&auto=format&fit=crop&q=60";
+            }
+            if (category === "Side Snacks") {
+                return "https://images.unsplash.com/photo-1534422298391-e4f8c172dddb?w=500&auto=format&fit=crop&q=60";
+            }
+            if (category === "Drinks") {
+                return "https://images.unsplash.com/photo-1497534446932-c925b458314e?w=500&auto=format&fit=crop&q=60";
+            }
+            return "https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=500&auto=format&fit=crop&q=60";
+        }
+
+        // Mock Static Rating generation for items (looks like image 1 tags)
+        function getItemRating(itemId) {
+            const hash = itemId.split("").reduce((acc, char) => acc + char.charCodeAt(0), 0);
+            const score = (4.0 + (hash % 10) * 0.1).toFixed(1);
+            return score;
+        }
+
+        // Sidebar Navigation Toggles
+        function openDrawerTab(tabName) {
+            document.getElementById("cart-overlay").classList.add("active");
+            document.getElementById("cart-drawer").classList.add("active");
+            switchDrawerTab(tabName);
+        }
+
+        function closeCartDrawer() {
+            document.getElementById("cart-overlay").classList.remove("active");
+            document.getElementById("cart-drawer").classList.remove("active");
+        }
+
+        function switchDrawerTab(tabName) {
+            document.querySelectorAll(".drawer-pill-link").forEach(t => t.classList.remove("active"));
+            document.querySelectorAll(".drawer-tab-pane").forEach(p => p.classList.remove("active"));
+
+            if (tabName === 'cart') {
+                document.getElementById("tab-cart-btn").classList.add("active");
+                document.getElementById("pane-cart").classList.add("active");
+                document.getElementById("cart-footer-panel").style.display = "block";
+            } else {
+                document.getElementById("tab-orders-btn").classList.add("active");
+                document.getElementById("pane-orders").classList.add("active");
+                document.getElementById("cart-footer-panel").style.display = "none";
+            }
+        }
+
+        // Show Toast Notification
+        function showToast(message) {
+            const toast = document.getElementById("toast-notif");
+            document.getElementById("toast-message").textContent = message;
+            toast.classList.add("show");
+            setTimeout(() => {
+                toast.classList.remove("show");
+            }, 3000);
+        }
+
+        document.addEventListener("DOMContentLoaded", function () {
+            // 1. Session verification & setup
+            const tableId = localStorage.getItem("customer_table_id");
+            const customerName = localStorage.getItem("customer_name");
+            const customerMobile = localStorage.getItem("customer_mobile");
+
+            if (!tableId || !customerName || !customerMobile) {
+                window.location.href = "customerOrder.html";
+                return;
+            }
+
+            document.getElementById("drawer-table-no").textContent = tableId;
+
+            // Exit session handler
+            window.exitSession = function() {
+                if (confirm("Exit active table session? This will clear your current cart!")) {
+                    localStorage.removeItem("customer_table_id");
+                    localStorage.removeItem("customer_name");
+                    localStorage.removeItem("customer_mobile");
+                    localStorage.removeItem("customer_cart");
+                    window.location.href = "customerOrder.html";
+                }
+            };
+
+            // Parse URL parameters for success state
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('success') === '1') {
+                document.getElementById("success-banner").style.display = "block";
+                window.history.replaceState({}, document.title, window.location.pathname);
+            }
+
+            // Local State Map
+            let cart = JSON.parse(localStorage.getItem("customer_cart")) || {};
+            let menuItemsMap = {}; 
+            let activeCategory = "all";
+
+            function saveCart() {
+                localStorage.setItem("customer_cart", JSON.stringify(cart));
+                renderCart();
+            }
+
+            // 2. Fetch Active Menu from Firestore
+            function loadMenu() {
+                if (typeof firebase === 'undefined' || !window.db) {
+                    setTimeout(loadMenu, 100);
+                    return;
+                }
+
+                window.db.collection("menu")
+                    .where("status", "==", "Active")
+                    .get()
+                    .then(querySnapshot => {
+                        const gridContainer = document.getElementById("food-menu-row");
+                        gridContainer.innerHTML = "";
+                        menuItemsMap = {};
+
+                        const rawItems = [];
+                        querySnapshot.forEach(doc => {
+                            const item = doc.data();
+                            menuItemsMap[item.item_id] = item;
+                            rawItems.push(item);
+                        });
+
+                        // Sort Menu Items numerically
+                        rawItems.sort((a, b) => a.item_id.localeCompare(b.item_id, undefined, { numeric: true, sensitivity: 'base' }));
+
+                        // Update total item indicator count
+                        document.getElementById("menu-items-count").textContent = `${rawItems.length} items`;
+
+                        if (rawItems.length === 0) {
+                            gridContainer.innerHTML = `<div class="col-12 text-center py-5 text-muted">No active menu items available.</div>`;
+                            return;
+                        }
+
+                        // Render Cards
+                        renderGrid(rawItems);
+                        listenToPlacedOrders();
+                    })
+                    .catch(err => {
+                        console.error("Menu fetch failed:", err);
+                        document.getElementById("food-menu-row").innerHTML = "<div class='col-12 text-center py-5 text-danger'>Error loading menu items. Please refresh.</div>";
+                    });
+            }
+
+            function renderGrid(items) {
+                const gridContainer = document.getElementById("food-menu-row");
+                gridContainer.innerHTML = "";
+
+                items.forEach(item => {
+                    const imgUrl = getFoodImage(item.item_name, item.item_category);
+                    const rating = getItemRating(item.item_id);
+
+                    const col = document.createElement("div");
+                    col.className = "col-md-6 col-lg-4 mb-4 food-card-item";
+                    col.dataset.category = item.item_category;
+                    col.innerHTML = `
+                        <div class="food-card">
+                            <span class="card-rating-badge"><i class="fa-solid fa-star text-warning"></i> ${rating}</span>
+                            <div class="food-image-wrapper">
+                                <img src="${imgUrl}" class="food-image" alt="${item.item_name}">
+                            </div>
+                            <div class="card-body-content">
+                                <h5 class="food-title">${item.item_name}</h5>
+                                <p class="food-desc">${item.item_description || 'Fresh ingredients and premium flavors cooked to order.'}</p>
+                                <div class="card-bottom-row">
+                                    <span class="food-price">Rs ${item.item_price.toFixed(2)}</span>
+                                    <button class="add-plus-btn add-to-cart-btn" data-id="${item.item_id}">
+                                        <i class="fa-solid fa-plus"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    gridContainer.appendChild(col);
+                });
+
+                // Attach Add Click Handlers
+                document.querySelectorAll(".add-to-cart-btn").forEach(btn => {
+                    btn.addEventListener("click", function (e) {
+                        e.stopPropagation();
+                        const itemId = this.dataset.id;
+                        cart[itemId] = (cart[itemId] || 0) + 1;
+                        saveCart();
+                        
+                        const item = menuItemsMap[itemId];
+                        showToast(`"${item.item_name}" added to cart!`);
+                    });
+                });
+
+                applyCategoryFilter();
+                renderCart();
+            }
+
+            // Category Tab filter click handlers
+            document.querySelectorAll("#menuTabs .category-tab").forEach(tab => {
+                tab.addEventListener("click", function(e) {
+                    e.preventDefault();
+                    document.querySelectorAll("#menuTabs .category-tab").forEach(t => t.classList.remove("active"));
+                    this.classList.add("active");
+                    activeCategory = this.dataset.category;
+                    applyCategoryFilter();
+                });
+            });
+
+            function applyCategoryFilter() {
+                const cards = document.querySelectorAll(".food-card-item");
+                let visibleCount = 0;
+
+                cards.forEach(card => {
+                    if (activeCategory === "all" || card.dataset.category === activeCategory) {
+                        card.style.display = "block";
+                        visibleCount++;
+                    } else {
+                        card.style.display = "none";
+                    }
+                });
+
+                document.getElementById("menu-items-count").textContent = `${visibleCount} items`;
+            }
+
+            // 3. Render Cart items (Image 2 style list view)
+            function renderCart() {
+                const listContainer = document.getElementById("cart-drawer-items-list");
+                const cartKeys = Object.keys(cart);
+
+                const totalItemsCount = cartKeys.reduce((acc, key) => acc + cart[key], 0);
+
+                if (cartKeys.length === 0) {
+                    listContainer.innerHTML = `
+                        <div class="text-center py-5 text-muted">
+                            <i class="fa-solid fa-bag-shopping fa-3x mb-3" style="opacity: 0.3;"></i>
+                            <h6 class="font-weight-bold">Your cart is empty</h6>
+                            <p style="font-size: 0.8rem; line-height: 1.4;">Select delicious dishes from the menu to get started!</p>
+                        </div>
+                    `;
+                    document.getElementById("floating-cart").style.display = "none";
+                    
+                    document.getElementById("cart-subtotal").textContent = "Rs 0.00";
+                    document.getElementById("cart-tax").textContent = "Rs 0.00";
+                    document.getElementById("cart-grandtotal").textContent = "Rs 0.00";
+                    document.getElementById("place-order-btn").disabled = true;
+                    return;
+                }
+
+                let totalPrice = 0;
+                let html = "";
+
+                cartKeys.forEach(itemId => {
+                    const item = menuItemsMap[itemId];
+                    if (!item) return;
+
+                    const qty = cart[itemId];
+                    const subtotal = item.item_price * qty;
+                    totalPrice += subtotal;
+
+                    const imgUrl = getFoodImage(item.item_name, item.item_category);
+
+                    html += `
+                        <div class="cart-item-row">
+                            <div class="cart-item-thumb-wrapper">
+                                <img src="${imgUrl}" class="cart-item-thumb" alt="${item.item_name}">
+                            </div>
+                            <div class="cart-item-info">
+                                <h6 class="cart-item-name">${item.item_name}</h6>
+                                <p class="cart-item-desc">${item.item_description || 'Fresh ingredients cooked to order.'}</p>
+                            </div>
+                            <div class="cart-item-price-side">
+                                <div class="cart-item-subtotal">Rs ${subtotal.toFixed(2)}</div>
+                                <div class="qty-controller">
+                                    <button class="qty-ctrl-btn" onclick="updateQty('${itemId}', -1)"><i class="fa-solid fa-minus"></i></button>
+                                    <span class="qty-ctrl-val">${qty}</span>
+                                    <button class="qty-ctrl-btn" onclick="updateQty('${itemId}', 1)"><i class="fa-solid fa-plus"></i></button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                listContainer.innerHTML = html;
+
+                // Update pricing details
+                const taxAmount = totalPrice * 0.10;
+                const grandTotal = totalPrice + taxAmount;
+
+                document.getElementById("cart-subtotal").textContent = `Rs ${totalPrice.toFixed(2)}`;
+                document.getElementById("cart-tax").textContent = `Rs ${taxAmount.toFixed(2)}`;
+                document.getElementById("cart-grandtotal").textContent = `Rs ${grandTotal.toFixed(2)}`;
+                document.getElementById("place-order-btn").disabled = false;
+
+                // Update bottom floating cart bar
+                document.getElementById("floating-cart").style.display = "flex";
+                document.getElementById("cart-badge-count").textContent = totalItemsCount;
+                document.getElementById("cart-badge-total").textContent = `Rs ${grandTotal.toFixed(2)}`;
+            }
+
+            // Expose update quantity handler globally
+            window.updateQty = function (itemId, delta) {
+                const current = cart[itemId] || 0;
+                const next = current + delta;
+                if (next <= 0) {
+                    delete cart[itemId];
+                    showToast("Item removed from cart.");
+                } else {
+                    cart[itemId] = next;
+                }
+                saveCart();
+            };
+
+            // 4. Place Kitchen Order & Associate with POS Bill
+            window.placeOrder = async function() {
+                const keys = Object.keys(cart);
+                if (keys.length === 0) return;
+
+                const placeBtn = document.getElementById("place-order-btn");
+                const errBanner = document.getElementById("error-banner");
+
+                placeBtn.disabled = true;
+                placeBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-2"></i> Submitting Order...`;
+                errBanner.style.display = "none";
+
+                try {
+                    // Step A: Handle POS Billing (Create or merge with active unpaid bill to occupy the table)
+                    let activeBill = null;
+                    let billDocId = "";
+
+                    const activeBillsQuery = await window.db.collection("bills")
+                        .where("table_id", "==", parseInt(tableId))
+                        .where("payment_time", "==", null)
+                        .get();
+
+                    if (!activeBillsQuery.empty) {
+                        // Unpaid bill exists, load it
+                        const billDoc = activeBillsQuery.docs[0];
+                        activeBill = billDoc.data();
+                        billDocId = billDoc.id;
+
+                        // Merge cart items into existing bill items_ordered
+                        const mergedItems = [...(activeBill.items_ordered || [])];
+                        keys.forEach(itemId => {
+                            const qty = cart[itemId];
+                            const match = menuItemsMap[itemId];
+                            const name = match ? match.item_name : itemId;
+                            const price = match ? parseFloat(match.item_price) : 0;
+                            const existingIdx = mergedItems.findIndex(item => item.item_id === itemId);
+                            if (existingIdx > -1) {
+                                mergedItems[existingIdx].quantity += qty;
+                                mergedItems[existingIdx].item_name = name;
+                                mergedItems[existingIdx].item_price = price;
+                            } else {
+                                mergedItems.push({
+                                    item_id: itemId,
+                                    item_name: name,
+                                    item_price: price,
+                                    quantity: qty
+                                });
+                            }
+                        });
+                        activeBill.items_ordered = mergedItems;
+
+                        // Recalculate total_amount
+                        let totalVal = 0;
+                        activeBill.items_ordered.forEach(ord => {
+                            const match = menuItemsMap[ord.item_id];
+                            if (match) {
+                                totalVal += match.item_price * ord.quantity;
+                            }
+                        });
+                        activeBill.total_amount = totalVal;
+                    } else {
+                        // Create a brand new unpaid bill record
+                        let nextBillId = 1001;
+                        const latestBillQuery = await window.db.collection("bills")
+                            .orderBy("bill_id", "desc")
+                            .limit(1)
+                            .get();
+
+                        if (!latestBillQuery.empty) {
+                            const latestId = parseInt(latestBillQuery.docs[0].data().bill_id);
+                            if (!isNaN(latestId)) {
+                                nextBillId = latestId + 1;
+                            }
+                        }
+
+                        billDocId = nextBillId.toString();
+                        
+                        let totalVal = 0;
+                        const itemsOrdered = keys.map(itemId => {
+                            const match = menuItemsMap[itemId];
+                            const qty = cart[itemId];
+                            const name = match ? match.item_name : itemId;
+                            const price = match ? parseFloat(match.item_price) : 0;
+                            if (match) totalVal += price * qty;
+                            return {
+                                item_id: itemId,
+                                item_name: name,
+                                item_price: price,
+                                quantity: qty
+                            };
+                        });
+
+                        activeBill = {
+                            bill_id: billDocId,
+                            table_id: parseInt(tableId),
+                            bill_time: new Date().toISOString(),
+                            payment_time: null,
+                            non_member_name: customerName,
+                            non_member_mobile: customerMobile,
+                            items_ordered: itemsOrdered,
+                            total_amount: totalVal
+                        };
+                    }
+
+                    // Save the POS bill record
+                    await window.db.collection("bills").doc(billDocId).set(activeBill);
+
+                    // Step B: Submit Kitchen and Customer Tracking Order entries
+                    let nextGroupId = 1;
+                    const groupQuery = await window.db.collection("customer_orders")
+                        .orderBy("request_group_id", "desc")
+                        .limit(1)
+                        .get();
+
+                    if (!groupQuery.empty) {
+                        const latestGroup = parseInt(groupQuery.docs[0].data().request_group_id);
+                        if (!isNaN(latestGroup)) {
+                            nextGroupId = latestGroup + 1;
+                        }
+                    }
+
+                    const now = new Date().toISOString();
+                    const batch = window.db.batch();
+
+                    keys.forEach(itemId => {
+                        // 1. Submit customer order tracking doc (status defaults to Preparing)
+                        const orderRef = window.db.collection("customer_orders").doc();
+                        batch.set(orderRef, {
+                            request_group_id: nextGroupId,
+                            table_id: parseInt(tableId),
+                            customer_name: customerName,
+                            customer_mobile: customerMobile,
+                            item_id: itemId,
+                            quantity: cart[itemId],
+                            order_time: now,
+                            status: "Preparing" // Shown on customer side
+                        });
+
+                        // 2. Submit active kitchen queue order linked via customer_order_id
+                        const kitchenRef = window.db.collection("kitchen").doc();
+                        batch.set(kitchenRef, {
+                            kitchen_id: Math.floor(Date.now() + Math.random() * 1000).toString(),
+                            table_no: parseInt(tableId),
+                            item_id: itemId,
+                            quantity: cart[itemId],
+                            time_submitted: now,
+                            customer_order_id: orderRef.id // Links completed actions
+                        });
+                    });
+
+                    await batch.commit();
+
+                    // Clear cart
+                    cart = {};
+                    localStorage.removeItem("customer_cart");
+                    saveCart();
+
+                    // Show success state and route tab view to live orders list!
+                    document.getElementById("success-banner").style.display = "block";
+                    openDrawerTab('orders');
+
+                } catch (err) {
+                    console.error("Order submission failed:", err);
+                    errBanner.style.display = "block";
+                    errBanner.textContent = "Failed to place order: " + err.message;
+                    placeBtn.disabled = false;
+                    placeBtn.innerHTML = `<i class="fa-solid fa-utensils"></i> Place Kitchen Order`;
+                }
+            };
+
+            // 5. Listen to Placed Orders in Real-time (Customer Status View)
+            function listenToPlacedOrders() {
+                window.db.collection("customer_orders")
+                    .where("table_id", "==", parseInt(tableId))
+                    .where("customer_name", "==", customerName)
+                    .where("customer_mobile", "==", customerMobile)
+                    .onSnapshot(querySnapshot => {
+                        const ordersContainer = document.getElementById("placed-orders-list-container");
+
+                        if (querySnapshot.empty) {
+                            ordersContainer.innerHTML = `
+                                <div class="text-center py-5 text-muted">
+                                    <i class="fa-solid fa-bowl-rice fa-3x mb-3" style="opacity: 0.3;"></i>
+                                    <h6 class="font-weight-bold">No active orders found</h6>
+                                    <p style="font-size: 0.8rem; line-height: 1.4;">Add items to your cart and place an order to see it here!</p>
+                                </div>
+                            `;
+                            return;
+                        }
+
+                        // Load and sort documents client-side by time descending
+                        const orderDocs = [];
+                        querySnapshot.forEach(doc => {
+                            orderDocs.push(doc.data());
+                        });
+
+                        orderDocs.sort((a, b) => new Date(b.order_time) - new Date(a.order_time));
+
+                        let html = "";
+                        orderDocs.forEach(order => {
+                            const menuItem = menuItemsMap[order.item_id];
+                            const name = menuItem ? menuItem.item_name : order.item_id;
+                            const price = menuItem ? menuItem.item_price : 0;
+                            const subtotal = price * order.quantity;
+                            const imgUrl = getFoodImage(name, menuItem ? menuItem.item_category : "");
+
+                            const timeFormatted = new Date(order.order_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+                            // Status badge dynamic styling
+                            let badgeStyle = "background-color: #FEF3C7; color: #D97706;"; // Preparing (Yellow)
+                            if (order.status === "Served") {
+                                badgeStyle = "background-color: #D1FAE5; color: #059669;"; // Served (Green)
+                            }
+
+                            html += `
+                                <div class="cart-item-row">
+                                    <div class="cart-item-thumb-wrapper">
+                                        <img src="${imgUrl}" class="cart-item-thumb" alt="${name}">
+                                    </div>
+                                    <div class="cart-item-info">
+                                        <h6 class="cart-item-name">${name} <span class="badge" style="font-size: 0.7rem; margin-left: 5px; vertical-align: middle; ${badgeStyle}">${order.status}</span></h6>
+                                        <p class="cart-item-desc"><i class="fa-regular fa-clock"></i> Placed at ${timeFormatted}</p>
+                                    </div>
+                                    <div class="cart-item-price-side" style="margin-top: -15px;">
+                                        <div class="cart-item-subtotal">Rs ${subtotal.toFixed(2)}</div>
+                                        <div style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted);">Qty: ${order.quantity}</div>
+                                    </div>
+                                </div>
+                            `;
+                        });
+
+                        ordersContainer.innerHTML = html;
+                    }, err => {
+                        console.error("Order history stream failed:", err);
+                        document.getElementById("placed-orders-list-container").innerHTML = `<p class="text-danger text-center py-4">Failed to load order history.</p>`;
+                    });
+            }
+
+            loadMenu();
+        });
+    </script>
+</body>
+</html>
