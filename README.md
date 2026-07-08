@@ -1,6 +1,6 @@
 ## Restaurant POS and Website
 
-![alt text](https://github.com/Brynlai/RestaurantProject/blob/main/RestaurantProjectImages/homehomepage.png?raw=true)
+![alt text](RestaurantProjectImages/homehomepage.png)
 
 **Built with these:** 
 <p align="left">
@@ -57,23 +57,23 @@
 | Admin | 99999 | 12345 |
 
 ## Screenshots
-![alt text](https://github.com/Brynlai/RestaurantProject/blob/main/RestaurantProjectImages/homehomepage.png?raw=true)
-![alt text](https://github.com/Brynlai/RestaurantProject/blob/main/RestaurantProjectImages/register.png?raw=true)
-![alt text](https://github.com/Brynlai/RestaurantProject/blob/main/RestaurantProjectImages/Login.png?raw=true)
-![alt text](https://github.com/Brynlai/RestaurantProject/blob/main/RestaurantProjectImages/homepageloggedin.png?raw=true)
-![alt text](https://github.com/Brynlai/RestaurantProject/blob/main/RestaurantProjectImages/reservation.png?raw=true)
-![alt text](https://github.com/Brynlai/RestaurantProject/blob/main/RestaurantProjectImages/stafflogin.png?raw=true)
-![alt text](https://github.com/Brynlai/RestaurantProject/blob/main/RestaurantProjectImages/postable.png?raw=true)
-![alt text](https://github.com/Brynlai/RestaurantProject/blob/main/RestaurantProjectImages/orderitembeforepay.png?raw=true)
-![alt text](https://github.com/Brynlai/RestaurantProject/blob/main/RestaurantProjectImages/addmemberidandreservationid.png?raw=true)
-![alt text](https://github.com/Brynlai/RestaurantProject/blob/main/RestaurantProjectImages/cashpaid.png?raw=true)
-![alt text](https://github.com/Brynlai/RestaurantProject/blob/main/RestaurantProjectImages/cardpayment.png?raw=true)
-![alt text](https://github.com/Brynlai/RestaurantProject/blob/main/RestaurantProjectImages/billdpanel.png?raw=true)
-![alt text](https://github.com/Brynlai/RestaurantProject/blob/main/RestaurantProjectImages/tablepanel.png?raw=true)
-![alt text](https://github.com/Brynlai/RestaurantProject/blob/main/RestaurantProjectImages/kitchenpanel.png?raw=true)
-![alt text](https://github.com/Brynlai/RestaurantProject/blob/main/RestaurantProjectImages/salespanel.png?raw=true)
-![alt text](https://github.com/Brynlai/RestaurantProject/blob/main/RestaurantProjectImages/statisticspanel.png?raw=true)
-![alt text](https://github.com/Brynlai/RestaurantProject/blob/main/RestaurantProjectImages/profilespanel.png?raw=true)
+![alt text](RestaurantProjectImages/homehomepage.png)
+![alt text](RestaurantProjectImages/register.png)
+![alt text](RestaurantProjectImages/Login.png)
+![alt text](RestaurantProjectImages/homepageloggedin.png)
+![alt text](RestaurantProjectImages/reservation.png)
+![alt text](RestaurantProjectImages/stafflogin.png)
+![alt text](RestaurantProjectImages/postable.png)
+![alt text](RestaurantProjectImages/orderitembeforepay.png)
+![alt text](RestaurantProjectImages/addmemberidandreservationid.png)
+![alt text](RestaurantProjectImages/cashpaid.png)
+![alt text](RestaurantProjectImages/cardpayment.png)
+![alt text](RestaurantProjectImages/billdpanel.png)
+![alt text](RestaurantProjectImages/tablepanel.png)
+![alt text](RestaurantProjectImages/kitchenpanel.png)
+![alt text](RestaurantProjectImages/salespanel.png)
+![alt text](RestaurantProjectImages/statisticspanel.png)
+![alt text](RestaurantProjectImages/profilespanel.png)
 
 
 
