@@ -6,7 +6,7 @@
 
 ## 🌐 Live Deployed Websites
 
-The application is deployed live on **Firebase Hosting**:
+The application is live on **Firebase Hosting**:
 
 | Portal | Live URL | Primary Target |
 | :--- | :--- | :--- |
@@ -14,7 +14,7 @@ The application is deployed live on **Firebase Hosting**:
 | 🛡️ **Admin & Staff Portal** | [pos-system-1276b.web.app](https://pos-system-1276b.web.app) | Staff Login, POS Terminal, Kitchen & Analytics |
 | 📱 **Online Ordering Portal** | [pos-system-1276b-75869.web.app](https://pos-system-1276b-75869.web.app) | Digital Customer Ordering Interface |
 
-*Alternative Firebase App domains:*
+*Alternative Firebase domains:*
 - Customer: `https://pos-system-1276b-24326.firebaseapp.com`
 - Staff/Admin: `https://pos-system-1276b.firebaseapp.com`
 - Ordering: `https://pos-system-1276b-75869.firebaseapp.com`
@@ -32,7 +32,75 @@ The application is deployed live on **Firebase Hosting**:
 
 ---
 
-## 🔑 Current System Credentials
+## 📸 Complete System Screenshots
+
+Below is the visual tour of all 16 interface modules in the system with descriptive titles:
+
+### 1. 👤 Customer Portal Screenshots
+
+#### 🔹 Customer Home Landing Page
+![Customer Home Landing Page](RestaurantProjectImages/homehomepage.png)
+
+#### 🔹 Online Table Reservation Booking
+![Online Table Reservation Booking](RestaurantProjectImages/reservation.png)
+
+---
+
+### 2. 🛡️ Staff & POS Terminal Screenshots
+
+#### 🔹 Staff Portal Authentication
+![Staff Portal Authentication](RestaurantProjectImages/stafflogin.png)
+
+#### 🔹 Waiter Service & Ordering Panel
+![Waiter Service & Ordering Panel](RestaurantProjectImages/waiterhomepage.png)
+
+#### 🔹 Interactive POS Table Layout & Billing
+![Interactive POS Table Layout & Billing](RestaurantProjectImages/postable.png)
+
+#### 🔹 POS Itemized Order Summary (Pre-Payment)
+![POS Itemized Order Summary Pre-Payment](RestaurantProjectImages/orderitembeforepay.png)
+
+#### 🔹 Cash Payment Checkout Screen
+![Cash Payment Checkout Screen](RestaurantProjectImages/cashpaid.png)
+
+#### 🔹 Credit / Debit Card Payment Processing
+![Credit / Debit Card Payment Processing](RestaurantProjectImages/cardpayment.png)
+
+---
+
+### 3. 🍳 Kitchen & Operations Screenshots
+
+#### 🔹 Real-Time Kitchen Display System (KDS)
+![Real-Time Kitchen Display System KDS](RestaurantProjectImages/kitchenpanel.png)
+
+#### 🔹 Chef Control Center & Kitchen Overview
+![Chef Control Center & Kitchen Overview](RestaurantProjectImages/Chefhomepage.png)
+
+#### 🔹 Table Capacity & Occupancy CRUD Panel
+![Table Capacity & Occupancy CRUD Panel](RestaurantProjectImages/tablepanel.png)
+
+---
+
+### 4. 📊 Analytics, Billing & Management Screenshots
+
+#### 🔹 Bills & Invoicing History Panel
+![Bills & Invoicing History Panel](RestaurantProjectImages/billdpanel.png)
+
+#### 🔹 Sales & Revenue Breakdown Dashboard
+![Sales & Revenue Breakdown Dashboard](RestaurantProjectImages/salespanel.png)
+
+#### 🔹 Visual Sales Analytics & Statistics
+![Visual Sales Analytics & Statistics](RestaurantProjectImages/statisticspanel.png)
+
+#### 🔹 Menu Items Management & Pricing CRUD
+![Menu Items Management & Pricing CRUD](RestaurantProjectImages/menuitemdetailspanel.png)
+
+#### 🔹 Staff Account Details & Roles Management
+![Staff Account Details & Roles Management](RestaurantProjectImages/staffaccountdetailspanel.png)
+
+---
+
+## 🔑 System Credentials
 
 ### 🛡️ Staff & Admin Credentials (Staff Portal)
 > **Login Page:** `http://localhost/POS-SYSTEM/adminSide/StaffLogin/login.php` or [Live Staff Portal](https://pos-system-1276b.web.app)  
@@ -110,22 +178,6 @@ php -S localhost:8000
 
 ---
 
-## 📸 Interface Screenshots
-
-| Customer Home | Logged In Dashboard |
-| :---: | :---: |
-| ![Home](RestaurantProjectImages/homehomepage.png) | ![Dashboard](RestaurantProjectImages/homepageloggedin.png) |
-
-| POS Terminal | Kitchen Display |
-| :---: | :---: |
-| ![POS Table](RestaurantProjectImages/postable.png) | ![Kitchen Panel](RestaurantProjectImages/kitchenpanel.png) |
-
-| Order Checkout | Sales Analytics |
-| :---: | :---: |
-| ![Order](RestaurantProjectImages/orderitembeforepay.png) | ![Sales Analytics](RestaurantProjectImages/salespanel.png) |
-
----
-
 ## 📁 Repository Structure
 
 ```
@@ -139,7 +191,7 @@ POS-SYSTEM/
 │   ├── CustomerReservation/# Table booking & receipt generation
 │   ├── home/               # Customer menu & ordering interface
 │   └── config.php          # Customer database configuration
-├── RestaurantProjectImages/# Interface screenshot gallery
+├── RestaurantProjectImages/# Interface screenshot gallery (16 Module Images)
 ├── restaurantDB.txt        # Full MySQL database schema & seed script
 ├── firebase.json           # Firebase Hosting & rewrite configurations
 ├── .firebaserc             # Firebase project target mappings
