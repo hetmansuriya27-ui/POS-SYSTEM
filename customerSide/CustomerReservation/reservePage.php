@@ -46,62 +46,104 @@ if (isset($_GET['reserved_table_id'])) {
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
 <style>
     body {
-        font-family: 'Inter', sans-serif !important;
-        background-color: var(--bg-workspace) !important;
-        color: var(--text-primary) !important;
+        font-family: 'Poppins', sans-serif !important;
+        background-image: linear-gradient(rgba(250, 248, 244, 0.65), rgba(250, 248, 244, 0.65)), url('../image/reservation_bg.jpg') !important;
+        background-size: cover !important;
+        background-position: center !important;
+        background-attachment: fixed !important;
+        background-repeat: no-repeat !important;
+        color: #555F70 !important; /* Body Text */
     }
+    
+    .section-title {
+        color: #23252F !important; /* Luxury Charcoal */
+        font-family: 'Playfair Display', serif !important;
+        font-weight: 700 !important;
+    }
+    
+    .section-title span {
+        color: #8C1D2C !important; /* Primary Accent */
+    }
+    
     .reserve-card {
-        background: var(--glass-panel) !important;
-        backdrop-filter: blur(25px) saturate(180%);
-        border: 1px solid var(--glass-border) !important;
+        background: #FFFFFF !important; /* Card Background */
+        border: 1px solid #E7E2DA !important; /* Border */
         border-radius: 20px;
         padding: 35px;
-        box-shadow: var(--shadow-card) !important;
-        transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        box-shadow: 0 12px 40px rgba(25, 30, 40, 0.08) !important;
+        transition: all 200ms ease;
     }
+    
     .reserve-card:hover {
-        border-color: crimson !important;
-        box-shadow: 0 20px 40px rgba(220, 20, 60, 0.08);
+        border-color: #C8A96A !important; /* Accent Gold */
+        box-shadow: 0 20px 50px rgba(25, 30, 40, 0.12) !important;
         transform: translateY(-4px);
     }
+    
+    .reserve-card h3 {
+        color: #23252F !important; /* Luxury Charcoal */
+        font-family: 'Playfair Display', serif !important;
+        font-weight: 700 !important;
+    }
+    
+    .text-crimson {
+        color: #8C1D2C !important; /* Primary Accent */
+    }
+    
     .cta-btn-sm {
-        background-color: transparent;
-        color: var(--text-primary) !important;
-        border: 2px solid crimson;
+        background-color: #8C1D2C !important; /* Primary Accent */
+        color: #FFFFFF !important;
+        border: 1px solid #8C1D2C !important;
         font-size: 1.3rem;
         text-transform: uppercase;
         font-weight: bold;
         letter-spacing: 0.05rem;
-        transition: 0.3s ease;
-        border-radius: 6px;
-        padding: 10px 20px;
+        transition: all 200ms ease;
+        border-radius: 14px;
+        padding: 14px 20px;
     }
+    
     .cta-btn-sm:hover {
-        background-color: crimson;
-        color: white !important;
-        box-shadow: 0px 0px 12px rgba(220, 20, 60, 0.5);
+        background-color: #6E1623 !important; /* Hover Accent */
+        border-color: #6E1623 !important;
+        color: #FFFFFF !important;
+        box-shadow: 0px 4px 12px rgba(140, 29, 44, 0.25) !important;
     }
-    .text-crimson {
-        color: crimson;
-        font-weight: bold;
+    
+    .cta-btn-sm:active {
+        background-color: #6E1623 !important; /* Active Accent */
+        border-color: #6E1623 !important;
     }
+    
+    label {
+        color: #555F70 !important; /* Body Text */
+        font-weight: 500;
+        font-family: 'Poppins', sans-serif !important;
+    }
+    
     /* Elegant standard inputs */
     input, select, textarea {
-        background-color: var(--bg-workspace) !important;
-        border: 1px solid var(--glass-border) !important;
-        border-radius: 12px !important;
-        color: var(--text-primary) !important;
+        background-color: #FFFFFF !important; /* Input Background */
+        border: 1px solid #E7E2DA !important; /* Input Border */
+        border-radius: 14px !important;
+        color: #23252F !important; /* Primary Text */
         padding: 12px 18px !important;
-        transition: all 0.2s ease !important;
+        transition: all 200ms ease !important;
     }
+    
     input:focus, select:focus, textarea:focus {
-        background-color: var(--bg-workspace) !important;
-        border-color: crimson !important;
-        box-shadow: 0 0 0 3px rgba(220, 20, 60, 0.2) !important;
-        color: var(--text-primary) !important;
+        background-color: #FFFFFF !important;
+        border-color: #8C1D2C !important; /* Primary Accent */
+        box-shadow: 0 0 0 3px rgba(140, 29, 44, 0.12) !important;
+        color: #23252F !important;
         outline: none !important;
     }
+    
+    input::placeholder, textarea::placeholder {
+        color: #7C8798 !important; /* Placeholder */
+    }
 </style>
+
 
 <div class="container" style="margin-top: 12rem; margin-bottom: 5rem;">
     <div class="row justify-content-center">

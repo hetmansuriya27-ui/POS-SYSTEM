@@ -1,30 +1,110 @@
 <?php include_once('../components/header.php')?>
 <style>
-    .cta-primary {
-        background-color: crimson !important;
-        border-color: crimson !important;
-        color: white !important;
+    #hero::after {
+        background-color: transparent !important;
+        opacity: 0 !important;
     }
+    
+    #hero h1 {
+        font-family: 'Outfit', sans-serif !important;
+        letter-spacing: -0.02em !important;
+        text-transform: uppercase !important;
+    }
+    
+    #hero h1 strong {
+        font-weight: 800 !important;
+    }
+    
+    /* Main Heading (X HOTEL) color override */
+    #hero h1:nth-child(1) {
+        animation: text_reveal_main 0.5s ease forwards !important;
+        animation-delay: 0.5s !important;
+        color: #1F2937 !important;
+    }
+    
+    /* Sub Heading (ARTISAN DINING) color override */
+    #hero h1:nth-child(2) {
+        animation: text_reveal_sub 0.5s ease forwards !important;
+        animation-delay: 1.5s !important;
+        color: #111827 !important;
+    }
+    
+    /* Selection text styles */
+    #hero ::selection {
+        background-color: #DC2626 !important;
+        color: #FFFFFF !important;
+    }
+    #hero h1::selection, #hero h1 strong::selection, #hero h1 span::selection {
+        background-color: #DC2626 !important;
+        color: #FFFFFF !important;
+    }
+    
+    /* Reveal sweep box accent color */
+    #hero h1 span {
+        background-color: #DC2626 !important;
+    }
+    
+    #hero h1:nth-child(1) span {
+        animation-delay: 0.1s !important;
+    }
+    
+    #hero h1:nth-child(2) span {
+        animation-delay: 1.0s !important;
+    }
+    
+    @keyframes text_reveal_main {
+        100% {
+            color: #1F2937;
+        }
+    }
+    
+    @keyframes text_reveal_sub {
+        100% {
+            color: #111827;
+        }
+    }
+    
+    /* Accent button styling */
+    .cta {
+        font-family: 'Inter', sans-serif !important;
+        font-weight: 600 !important;
+        font-size: 1.8rem !important;
+        border-radius: 12px !important;
+        padding: 12px 30px !important;
+        border: 2px solid #DC2626 !important;
+        background: transparent !important;
+        color: #111827 !important;
+        transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+        margin-top: 30px;
+    }
+    
+    .cta:hover {
+        background: #DC2626 !important;
+        color: white !important;
+        box-shadow: 0 6px 20px rgba(220, 38, 38, 0.25) !important;
+    }
+    
+    .cta-primary {
+        background-color: #DC2626 !important;
+        border-color: #DC2626 !important;
+        color: white !important;
+        box-shadow: 0 4px 14px rgba(220, 38, 38, 0.15) !important;
+    }
+    
     .cta-primary:hover {
         background-color: transparent !important;
-        color: crimson !important;
-        border-color: crimson !important;
-        box-shadow: 0 0 15px rgba(220, 20, 60, 0.4);
+        color: #DC2626 !important;
+        border-color: #DC2626 !important;
+        box-shadow: 0 6px 20px rgba(220, 38, 38, 0.3) !important;
     }
 </style>
-<!-- Hero Section with Video Background and Text Overlay -->
+<!-- Hero Section with Image Background and Text Overlay -->
 <section id="hero" style="position: relative;">
-    <video autoplay loop muted playsinline poster="your-poster-image.jpg" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover;">
-        <source src="../image/SteakOnGrillCloseup.mp4" type="video/mp4">
-        <!-- Add additional source elements for 
-        1.  SteakOnGrillCloseup
-
-        other video formats if needed -->
-    </video>
+    <img src="../image/artisan_dining.jpg" alt="Artisan Dining" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: -2;">
     <div class="hero container" style="position: relative; z-index: 1;">
         <div>
-            <h1><strong><h1 class="text-center" style="font-family:Copperplate; color:whitesmoke;">X HOTEL</h1><span></span></strong></h1>
-            <h1><strong style="color:white;">DINING & BAR<span></span></strong></h1>
+            <h1><strong>X HOTEL</strong><span></span></h1>
+            <h1><strong>ARTISAN DINING</strong><span></span></h1>
             <a href="#projects" type="button" class="cta">MENU</a>
             <a href="../CustomerReservation/reservePage.php" type="button" class="cta cta-primary" style="margin-left: 10px;">RESERVATION</a>
         </div>

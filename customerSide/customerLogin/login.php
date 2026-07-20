@@ -236,7 +236,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         <a class="nav-link text-center p-0" href="../home/home.php#hero">
             <h1 class="brand-title text-center mb-1">X <span>HOTEL</span></h1>
         </a>
-        <h2 class="page-title">Dining & Bar</h2>
+        <h2 class="page-title">Artisan Dining</h2>
         
         <form action="login.php" method="post">
             <div class="form-group mb-4">

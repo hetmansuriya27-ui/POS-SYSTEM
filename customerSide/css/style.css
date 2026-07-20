@@ -713,89 +713,130 @@ p {
 }
 
 /* ==========================================================
-   PREMIUM CUSTOMER-SIDE DARK-FIRST VISUAL OVERRIDES
+   PREMIUM LUXURY HOSPITALITY VISUAL REDESIGN (5-STAR CUSTOMER STYLE OVERRIDES)
    ========================================================== */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
 
 :root {
-  --primary: #DC2626;
-  --primary-glow: rgba(220, 38, 38, 0.15);
-  --secondary: #EF4444;
-  --success: #10B981;
-  --success-glow: rgba(16, 185, 129, 0.15);
-  --warning: #F59E0B;
-  --warning-glow: rgba(245, 158, 11, 0.15);
-  --danger: #EF4444;
-  --danger-glow: rgba(239, 68, 68, 0.15);
-  --bg-workspace: #FFFFFF;
-  --glass-panel: #FFFFFF;
-  --glass-border: #E2E8F0;
-  --text-primary: #1E293B;
-  --text-secondary: #64748B;
+  --primary: #8C1D2C;          /* Deep Burgundy */
+  --primary-hover: #6E1623;    /* Hover Burgundy */
+  --bg-page: #FAF8F4;          /* Warm Ivory */
+  --bg-card: #FFFFFF;          /* Pure White */
+  --bg-alt: #F4EFE8;           /* Soft Cream */
+  --text-title: #23252F;       /* Luxury Charcoal */
+  --text-body: #555F70;        /* Body Slate */
+  --text-muted: #7C8798;       /* Muted Slate */
+  --border-color: #E7E2DA;     /* Warm Light Border */
+  --accent: #C8A96A;           /* Champagne Gold Accent */
+
+  --success: #2D9D78;
+  --warning: #C68A00;
+  --error: #C0392B;
+  --info: #3A7BD5;
+
+  --font-title: 'Playfair Display', serif;
+  --font-body: 'Poppins', sans-serif;
+
+  --radius-card: 20px;
+  --radius-btn: 14px;
+  --radius-img: 18px;
+  --radius-badge: 999px;
+
+  --shadow-card: 0 12px 40px rgba(25, 30, 40, 0.08);
+  --shadow-hover: 0 20px 50px rgba(25, 30, 40, 0.12);
 }
 
 html, body {
-  font-family: 'Inter', sans-serif !important;
-  background-color: var(--bg-workspace) !important;
-  background-image: 
-    radial-gradient(at 0% 0%, rgba(220, 38, 38, 0.03) 0px, transparent 40%),
-    radial-gradient(at 100% 0%, rgba(245, 158, 11, 0.03) 0px, transparent 40%),
-    url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.008'/%3E%3C/svg%3E") !important;
-  color: var(--text-primary) !important;
+  font-family: var(--font-body) !important;
+  background-color: var(--bg-page) !important;
+  color: var(--text-body) !important;
+  scroll-behavior: smooth;
+}
+
+/* Typography elements overrides */
+h1, h2, h3, .section-title, .brand h1 {
+  font-family: var(--font-title) !important;
+  color: var(--text-title) !important;
+  letter-spacing: -0.01em !important;
+}
+
+p, label, td, th, a, span {
+  font-family: var(--font-body) !important;
+  color: var(--text-body) !important;
 }
 
 /* Sections title */
 .section-title {
-  font-family: 'Outfit', sans-serif !important;
+  font-size: 3.5rem !important;
   font-weight: 700 !important;
-  color: var(--text-primary) !important;
-  letter-spacing: -0.02em !important;
-  text-transform: uppercase !important;
+  text-transform: capitalize !important;
+  margin-bottom: 24px !important;
+  text-align: center;
+  position: relative;
+  display: inline-block;
+  width: 100%;
 }
 
 .section-title span {
   color: var(--primary) !important;
+  border-bottom: 2px solid var(--accent);
 }
 
 /* CTA buttons overrides */
-.cta {
-  font-family: 'Inter', sans-serif !important;
+.cta, .cta-primary {
+  font-family: var(--font-body) !important;
   font-weight: 600 !important;
   font-size: 1.1rem !important;
-  border-radius: 12px !important;
-  padding: 12px 30px !important;
+  border-radius: var(--radius-btn) !important;
+  padding: 14px 34px !important;
   border: 1px solid var(--primary) !important;
   background: var(--primary) !important;
-  color: white !important;
-  box-shadow: 0 4px 14px var(--primary-glow) !important;
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  color: #FFFFFF !important;
+  box-shadow: var(--shadow-card) !important;
+  transition: all 200ms ease !important;
+  letter-spacing: 0.05em !important;
+  text-transform: uppercase !important;
 }
 
-.cta:hover {
-  background: #B91C1C !important;
-  border-color: #B91C1C !important;
+.cta:hover, .cta-primary:hover {
+  background: var(--primary-hover) !important;
+  border-color: var(--primary-hover) !important;
   transform: translateY(-2px) scale(1.02) !important;
-  box-shadow: 0 6px 20px rgba(220, 38, 38, 0.25) !important;
+  box-shadow: var(--shadow-hover) !important;
 }
 
-/* Header menu overrides */
+.cta-primary {
+  border: 1px solid var(--accent) !important;
+  background: transparent !important;
+  color: var(--text-title) !important;
+  box-shadow: none !important;
+}
+
+.cta-primary:hover {
+  background: var(--primary) !important;
+  border-color: var(--primary) !important;
+  color: #FFFFFF !important;
+}
+
+/* Header / Navbar */
 #header .header {
-  background: #FFFFFF !important; /* Pure White Navbar */
-  border-bottom: 1px solid var(--glass-border) !important;
-  box-shadow: 0 2px 10px rgba(30, 41, 59, 0.04) !important;
+  background: var(--bg-page) !important;
+  border-bottom: 1px solid var(--border-color) !important;
+  box-shadow: 0 4px 20px rgba(35, 37, 47, 0.02) !important;
 }
 
 #header .brand h1 {
-  color: var(--text-primary) !important;
-}
-
-#header .brand h1 span {
-  color: var(--primary) !important;
+  font-family: var(--font-title) !important;
+  color: var(--text-title) !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.1em !important;
 }
 
 #header .nav-list ul a {
-  color: var(--text-primary) !important;
-  font-weight: 600 !important;
+  color: var(--text-title) !important;
+  font-weight: 500 !important;
+  font-size: 1.5rem !important;
+  text-transform: capitalize !important;
 }
 
 #header .nav-list ul a:hover {
@@ -804,18 +845,18 @@ html, body {
 
 /* Service items and projects details */
 #services .service-item, #projects .project-info {
-  background: var(--glass-panel) !important;
-  border: 1px solid var(--glass-border) !important;
-  border-radius: 20px !important;
-  box-shadow: 0 10px 30px rgba(30, 41, 59, 0.04), 0 1px 3px rgba(30, 41, 59, 0.02) !important;
-  color: var(--text-primary) !important;
-  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  background: var(--bg-card) !important;
+  border: 1px solid var(--border-color) !important;
+  border-radius: var(--radius-card) !important;
+  box-shadow: var(--shadow-card) !important;
+  color: var(--text-body) !important;
+  transition: all 200ms ease !important;
 }
 
 #services .service-item:hover, #projects .project-item:hover {
-  border-color: rgba(220, 38, 38, 0.25) !important;
-  box-shadow: 0 20px 40px rgba(220, 38, 38, 0.06), 0 0 20px rgba(220, 38, 38, 0.02) !important;
-  transform: translateY(-8px) !important;
+  border-color: var(--accent) !important;
+  box-shadow: var(--shadow-hover) !important;
+  transform: translateY(-4px) !important;
 }
 
 #services .service-item::after, #projects .project-info::after, #projects .project-img:after {
@@ -823,68 +864,139 @@ html, body {
 }
 
 #services .service-item h2, #projects .project-info h1, #projects .project-info h2 {
-  font-family: 'Outfit', sans-serif !important;
+  font-family: var(--font-title) !important;
   font-weight: 700 !important;
-  color: var(--text-primary) !important;
+  color: var(--text-title) !important;
 }
 
-#services .service-item p, #projects .project-info p, p {
-  color: var(--text-secondary) !important;
+#services .service-item p, #projects .project-info p {
+  color: var(--text-body) !important;
   font-weight: 400 !important;
 }
 
 /* Form controls and reservation inputs */
 input, select, textarea {
-  background-color: #FFFFFF !important;
-  border: 1px solid var(--glass-border) !important;
-  border-radius: 12px !important;
-  color: var(--text-primary) !important;
+  background-color: var(--bg-card) !important;
+  border: 1px solid var(--border-color) !important;
+  border-radius: var(--radius-btn) !important;
+  color: var(--text-title) !important;
   padding: 12px 18px !important;
-  transition: all 0.2s ease !important;
+  transition: all 200ms ease !important;
 }
 
 input:focus, select:focus, textarea:focus {
-  background-color: #FFFFFF !important;
+  background-color: var(--bg-card) !important;
   border-color: var(--primary) !important;
-  box-shadow: 0 0 0 3px var(--primary-glow) !important;
-  color: var(--text-primary) !important;
+  box-shadow: 0 0 0 3px rgba(140, 29, 44, 0.12) !important;
+  color: var(--text-title) !important;
   outline: none !important;
 }
 
 select option {
-  background-color: #FFFFFF !important;
-  color: #1E293B !important;
+  background-color: var(--bg-card) !important;
+  color: var(--text-title) !important;
 }
 
 /* Contact information items */
 #contact .contact-item {
-  background: var(--glass-panel) !important;
-  border: 1px solid var(--glass-border) !important;
-  border-radius: 20px !important;
-  box-shadow: 0 10px 30px rgba(30, 41, 59, 0.04), 0 1px 3px rgba(30, 41, 59, 0.02) !important;
-  transition: all 0.3s ease !important;
+  background: var(--bg-card) !important;
+  border: 1px solid var(--border-color) !important;
+  border-radius: var(--radius-card) !important;
+  box-shadow: var(--shadow-card) !important;
+  transition: all 200ms ease !important;
 }
 
 #contact .contact-item:hover {
-  border-color: rgba(220, 38, 38, 0.25) !important;
-  box-shadow: 0 20px 40px rgba(220, 38, 38, 0.06), 0 0 20px rgba(220, 38, 38, 0.02) !important;
+  border-color: var(--accent) !important;
+  box-shadow: var(--shadow-hover) !important;
 }
 
 #contact .contact-info h1 {
-  font-family: 'Outfit', sans-serif !important;
+  font-family: var(--font-title) !important;
   font-weight: 700 !important;
-  color: var(--text-primary) !important;
+  color: var(--text-title) !important;
 }
 
 #contact .contact-info h2 {
-  color: var(--text-secondary) !important;
+  color: var(--text-body) !important;
 }
 
 #footer {
-  background: #F8FAFC !important; /* Soft light gray footer */
-  border-top: 1px solid var(--glass-border) !important;
+  background: var(--bg-alt) !important;
+  border-top: 1px solid var(--border-color) !important;
 }
 
+#footer h2 {
+  color: var(--text-title) !important;
+  font-family: var(--font-title) !important;
+}
+
+#footer p {
+  color: var(--text-body) !important;
+}
+
+/* Dropdown Menu categories custom styling (Food Ordering Menu) */
+.menu-category {
+  font-family: var(--font-body) !important;
+  font-weight: 600 !important;
+  border: 1px solid var(--border-color) !important;
+  background-color: var(--bg-card) !important;
+  border-radius: var(--radius-btn) !important;
+  padding: 10px 24px !important;
+  color: var(--text-title) !important;
+  outline: none !important;
+  box-shadow: var(--shadow-card) !important;
+}
+
+.menu-category:focus {
+  border-color: var(--primary) !important;
+  box-shadow: 0 0 0 3px rgba(140, 29, 44, 0.12) !important;
+}
+
+/* Custom premium visual formatting for Food items */
+.drinks, .sideDish, .mainDish {
+  background: var(--bg-card) !important;
+  padding: 30px !important;
+  border-radius: var(--radius-card) !important;
+  border: 1px solid var(--border-color) !important;
+  box-shadow: var(--shadow-card) !important;
+  margin-bottom: 30px !important;
+}
+
+.drinks h1, .sideDish h1, .mainDish h1 {
+  font-family: var(--font-title) !important;
+  color: var(--text-title) !important;
+  border-bottom: 2px solid var(--accent) !important;
+  padding-bottom: 12px !important;
+  margin-bottom: 24px !important;
+  font-size: 2.25rem !important;
+}
+
+.drinks p, .sideDish p, .mainDish p {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  margin-bottom: 16px !important;
+  border-bottom: 1px dashed var(--border-color);
+  padding-bottom: 12px !important;
+}
+
+.drinks p .item-name, .sideDish p .item-name, .mainDish p .item-name {
+  font-family: var(--font-body) !important;
+  color: var(--text-title) !important;
+  font-size: 1.5rem !important;
+}
+
+.drinks p .item-price, .sideDish p .item-price, .mainDish p .item-price {
+  font-family: var(--font-body) !important;
+  color: var(--primary) !important;
+  font-weight: 700 !important;
+  font-size: 1.6rem !important;
+}
+
+.drinks hr, .sideDish hr, .mainDish hr {
+  display: none !important; /* Hide defaults */
+}
 
 /* ========================================================
    TRANSITION MANAGER SUPPRESSION FLAG
@@ -898,9 +1010,8 @@ select option {
 }
 
 *, *::before, *::after {
-  transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease !important;
+  transition: background-color 200ms ease, border-color 200ms ease, color 200ms ease, box-shadow 200ms ease !important;
 }
-
 
 /* ========================================================
    THEME-AWARE PRINTING SAFEGUARDS
@@ -924,4 +1035,4 @@ select option {
     border-color: #CCCCCC !important;
   }
 }
-/* End  Media Query For Desktop */
+/* End Premium Visual Overrides */

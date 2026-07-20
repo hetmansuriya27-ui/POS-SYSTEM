@@ -83,72 +83,89 @@
 
                 <!-- Sorting and Table Row -->
                 <div class="row">
-                    <!-- Left: Pie Charts Grid -->
-                    <div class="col-lg-7">
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="chart-box text-center">
-                                    <h6 class="font-weight-bold text-white mb-3">Top 5 Items (Overall)</h6>
-                                    <div style="height: 280px; position: relative;">
-                                        <canvas id="overallChart"></canvas>
-                                    </div>
-                                </div>
+                    <!-- Left: Stacked Pie Charts -->
+                    <div class="col-lg-4">
+                        <div class="chart-box text-center">
+                            <h6 class="font-weight-bold mb-3" style="color: var(--text-primary) !important;"><i class="fa fa-arrow-up text-success mr-2"></i> Most Sold Items (Top 5)</h6>
+                            <div style="height: 280px; position: relative;">
+                                <canvas id="overallChart"></canvas>
                             </div>
-                            <div class="col-md-6">
-                                <div class="chart-box text-center">
-                                    <h6 class="font-weight-bold text-white mb-3">Top 5 Main Dishes</h6>
-                                    <div style="height: 280px; position: relative;">
-                                        <canvas id="mainChart"></canvas>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="chart-box text-center">
-                                    <h6 class="font-weight-bold text-white mb-3">Top 5 Side Snacks</h6>
-                                    <div style="height: 280px; position: relative;">
-                                        <canvas id="sideChart"></canvas>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="chart-box text-center">
-                                    <h6 class="font-weight-bold text-white mb-3">Top 5 Drinks</h6>
-                                    <div style="height: 280px; position: relative;">
-                                        <canvas id="drinksChart"></canvas>
-                                    </div>
-                                </div>
+                        </div>
+                        <div class="chart-box text-center">
+                            <h6 class="font-weight-bold mb-3" style="color: var(--text-primary) !important;"><i class="fa fa-arrow-down text-danger mr-2"></i> Least Sold Items (Bottom 5)</h6>
+                            <div style="height: 280px; position: relative;">
+                                <canvas id="leastChart"></canvas>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Right: Item Units Table -->
-                    <div class="col-lg-5">
-                        <div class="report-container">
-                            <div class="d-flex justify-content-between align-items-center mb-3">
-                                <h5 class="font-weight-bold text-white mb-0">Sales Quantity Log</h5>
-                                <div class="btn-group btn-group-sm">
-                                    <button onclick="sortSales('desc')" class="btn btn-outline-dark font-weight-bold active" id="btn-sort-desc" style="border-radius: 12px 0 0 12px !important;">Most</button>
-                                    <button onclick="sortSales('asc')" class="btn btn-outline-dark font-weight-bold" id="btn-sort-asc" style="border-radius: 0 12px 12px 0 !important;">Least</button>
+                    <!-- Right: Comparison & Log -->
+                    <div class="col-lg-8">
+                        <div class="row">
+                            <!-- Comparison Card -->
+                            <div class="col-md-7">
+                                <div class="report-container" style="min-height: 785px;">
+                                    <h5 class="font-weight-bold mb-2" style="color: var(--text-primary) !important;"><i class="fa fa-balance-scale mr-2 text-primary"></i> Product Detail & Comparison</h5>
+                                    <p class="text-muted small">Select one or more products to inspect sales details and view their performance share comparison.</p>
+                                    
+                                    <div class="form-group mb-3 position-relative">
+                                        <label class="font-weight-bold mb-2" style="color: var(--text-primary) !important;">Search Product by Name or ID:</label>
+                                        <input type="text" id="chk-search" placeholder="Type name or ID (e.g. MD1, Margherita...)" class="form-control" oninput="showSearchAutocomplete()" onfocus="showSearchAutocomplete()" autocomplete="off" style="font-size: 0.95em; padding: 10px 14px !important; border-radius: 12px !important;">
+                                        
+                                        <!-- Autocomplete Floating Dropdown Menu -->
+                                        <div id="search-autocomplete-dropdown" class="dropdown-menu shadow-lg p-2" style="display: none; position: absolute; top: 100%; left: 0; right: 0; max-height: 250px; overflow-y: auto; z-index: 1050; border-radius: 12px; background: var(--bg-workspace); border: 1px solid var(--glass-border);">
+                                            <!-- Autocomplete items -->
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Selected tag chips container -->
+                                    <div id="selected-compare-tags" class="d-flex flex-wrap mb-3">
+                                        <!-- Dynamic tags -->
+                                    </div>
+                                    
+                                    <div id="comparison-details" class="mb-3">
+                                        <div class="text-center py-4 text-muted small"><i class="fa fa-info-circle mr-1"></i> Check products above to load details</div>
+                                    </div>
+                                    
+                                    <div class="chart-box text-center mb-0 mt-3" style="min-height: auto; padding: 15px; background: rgba(255,255,255,0.02) !important;">
+                                        <h6 class="font-weight-bold mb-2" style="color: var(--text-primary) !important;">Comparative Sales Proportion</h6>
+                                        <div style="height: 240px; position: relative;">
+                                            <canvas id="comparisonChart"></canvas>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                             
-                            <div class="table-responsive" style="max-height: 680px; overflow-y: auto;">
-                                <table class="table table-hover mb-0">
-                                    <thead>
-                                        <tr>
-                                            <th>Item Name</th>
-                                            <th style="width: 100px;" class="text-right">Units Sold</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="sales-table-body">
-                                        <tr>
-                                            <td colspan="2" class="text-center py-5">
-                                                <i class="fa fa-spinner fa-spin fa-2x mb-2 d-block text-muted"></i>
-                                                <span class="text-muted font-weight-bold">Calculating sales logs...</span>
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                </table>
+                            <!-- Log Table -->
+                            <div class="col-md-5">
+                                <div class="report-container" style="min-height: 785px;">
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <h5 class="font-weight-bold mb-0" style="color: var(--text-primary) !important;">Sales Log</h5>
+                                        <div class="btn-group btn-group-sm">
+                                            <button onclick="sortSales('desc')" class="btn btn-outline-dark font-weight-bold active" id="btn-sort-desc" style="border-radius: 12px 0 0 12px !important; font-size: 0.75rem;">Most</button>
+                                            <button onclick="sortSales('asc')" class="btn btn-outline-dark font-weight-bold" id="btn-sort-asc" style="border-radius: 0 12px 12px 0 !important; font-size: 0.75rem;">Least</button>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="table-responsive" style="max-height: 660px; overflow-y: auto;">
+                                        <table class="table table-hover mb-0">
+                                            <thead>
+                                                <tr>
+                                                    <th>Item Name</th>
+                                                    <th style="width: 80px;" class="text-right">Units</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="sales-table-body">
+                                                <tr>
+                                                    <td colspan="2" class="text-center py-5">
+                                                        <i class="fa fa-spinner fa-spin fa-2x mb-2 d-block text-muted"></i>
+                                                        <span class="text-muted font-weight-bold">Calculating sales logs...</span>
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -165,6 +182,9 @@
         let salesData = []; // [{ name, qty, category }]
         let sortOrder = "desc";
 
+        let allMenuItems = []; // Complete menu cache [{ id, name, category }]
+        let selectedCompareItems = []; // Selected item names for comparison
+
         let charts = {}; // references to chart instances
 
         document.addEventListener("DOMContentLoaded", function () {
@@ -179,10 +199,16 @@
                     return;
                 }
 
-                // 1. Fetch menu cache to categorize items properly
+                // 1. Fetch complete menu database to allow search by name or item ID
                 window.db.collection("menu").get().then(menuSnapshot => {
+                    allMenuItems = [];
                     menuSnapshot.forEach(doc => {
                         const d = doc.data();
+                        allMenuItems.push({
+                            id: doc.id, // e.g. "MD1"
+                            name: d.item_name,
+                            category: d.item_category || "Main Dish"
+                        });
                         menuCategories[d.item_name] = d.item_category || "Main Dish";
                     });
 
@@ -211,6 +237,15 @@
             }
 
             initAnalytics();
+            
+            // Close autocomplete dropdown when clicking outside
+            document.addEventListener("click", function(e) {
+                const dropdown = document.getElementById("search-autocomplete-dropdown");
+                const input = document.getElementById("chk-search");
+                if (dropdown && input && !dropdown.contains(e.target) && e.target !== input) {
+                    dropdown.style.display = "none";
+                }
+            });
         });
 
         function processSalesData() {
@@ -256,6 +291,10 @@
             // Render Table
             renderTable();
 
+            // Re-render comparison tags and details
+            renderCompareTags();
+            onCompareItemsChange();
+
             // Draw charts
             drawCharts();
         }
@@ -298,42 +337,218 @@
         }
 
         function drawCharts() {
-            // Group Top 5 for Overall, Main, Side, Drinks
+            // Group Top 5 for Overall Most Sold, Bottom 5 for Overall Least Sold
             const getTopFive = (items) => {
-                // sort temp descending for charts
                 const sorted = [...items].sort((a,b) => b.qty - a.qty);
                 return sorted.slice(0, 5);
             };
 
+            const getBottomFive = (items) => {
+                const sorted = [...items].sort((a,b) => a.qty - b.qty);
+                return sorted.slice(0, 5);
+            };
+
             const overall = getTopFive(salesData);
-            const mains = getTopFive(salesData.filter(i => i.category === "Main Dish"));
-            const sides = getTopFive(salesData.filter(i => i.category === "Side Snacks"));
-            const drinks = getTopFive(salesData.filter(i => i.category === "Drinks"));
+            const least = getBottomFive(salesData);
 
             renderChartInstance("overallChart", overall);
-            renderChartInstance("mainChart", mains);
-            renderChartInstance("sideChart", sides);
-            renderChartInstance("drinksChart", drinks);
+            renderChartInstance("leastChart", least);
         }
 
-        function renderChartInstance(canvasId, topItems) {
+        function showSearchAutocomplete() {
+            const query = document.getElementById("chk-search").value.toLowerCase().trim();
+            const dropdown = document.getElementById("search-autocomplete-dropdown");
+            
+            // Filter complete menu list
+            const matches = allMenuItems.filter(item => {
+                const matchesName = item.name.toLowerCase().includes(query);
+                const matchesId = item.id.toLowerCase().includes(query);
+                return matchesName || matchesId;
+            });
+            
+            if (matches.length === 0) {
+                dropdown.innerHTML = `<div class="dropdown-item text-muted text-center py-2 small">No matching items found</div>`;
+                dropdown.style.display = "block";
+                return;
+            }
+            
+            let html = "";
+            matches.forEach(item => {
+                const isSelected = selectedCompareItems.includes(item.name);
+                const checkIcon = isSelected ? `<i class="fa fa-check text-success mr-2"></i>` : "";
+                const selectedStyle = isSelected ? "font-weight-bold" : "";
+                
+                html += `
+                    <a class="dropdown-item py-2 d-flex justify-content-between align-items-center ${selectedStyle}" href="javascript:void(0)" onclick="selectCompareItem('${item.name}')" style="cursor: pointer; border-radius: 8px; color: var(--text-primary);">
+                        <span><strong class="text-secondary mr-2">[${item.id}]</strong> ${item.name}</span>
+                        ${checkIcon}
+                    </a>
+                `;
+            });
+            
+            dropdown.innerHTML = html;
+            dropdown.style.display = "block";
+        }
+
+        function selectCompareItem(name) {
+            if (!selectedCompareItems.includes(name)) {
+                selectedCompareItems.push(name);
+            } else {
+                selectedCompareItems = selectedCompareItems.filter(n => n !== name);
+            }
+            
+            document.getElementById("chk-search").value = "";
+            document.getElementById("search-autocomplete-dropdown").style.display = "none";
+            
+            renderCompareTags();
+            onCompareItemsChange();
+        }
+
+        function removeCompareItem(name) {
+            selectedCompareItems = selectedCompareItems.filter(n => n !== name);
+            renderCompareTags();
+            onCompareItemsChange();
+        }
+
+        function renderCompareTags() {
+            const container = document.getElementById("selected-compare-tags");
+            if (!container) return;
+            
+            if (selectedCompareItems.length === 0) {
+                container.innerHTML = "";
+                return;
+            }
+            
+            let html = "";
+            selectedCompareItems.forEach(name => {
+                const menuItem = allMenuItems.find(i => i.name === name) || { id: "??", name: name };
+                html += `
+                    <span class="badge badge-pill badge-primary p-2 mr-2 mb-2 d-inline-flex align-items-center" style="font-size: 0.85em; background-color: var(--primary) !important; color: white !important; border-radius: 20px;">
+                        <span class="mr-1"><strong class="text-warning">[${menuItem.id}]</strong> ${menuItem.name}</span>
+                        <a href="javascript:void(0)" onclick="removeCompareItem('${menuItem.name}')" class="text-white ml-2 font-weight-bold" style="text-decoration: none; font-size: 1.1em; line-height: 1;">&times;</a>
+                    </span>
+                `;
+            });
+            container.innerHTML = html;
+        }
+
+        const getSalesQty = (name) => {
+            const record = salesData.find(i => i.name === name);
+            return record ? record.qty : 0;
+        };
+
+        function onCompareItemsChange() {
+            const detailsContainer = document.getElementById("comparison-details");
+            
+            if (selectedCompareItems.length === 0) {
+                detailsContainer.innerHTML = `
+                    <div class="text-center py-4 text-muted small"><i class="fa fa-info-circle mr-1"></i> Search and select products above to load details</div>
+                `;
+                renderChartInstance("comparisonChart", []);
+                return;
+            }
+            
+            const totalSales = salesData.reduce((acc, curr) => acc + curr.qty, 0);
+            
+            let html = "";
+            if (selectedCompareItems.length === 1) {
+                const name = selectedCompareItems[0];
+                const menuItem = allMenuItems.find(i => i.name === name) || { id: "??", name: name, category: "Main Dish" };
+                const qty = getSalesQty(name);
+                const percentage = totalSales > 0 ? ((qty / totalSales) * 100).toFixed(1) : 0;
+                
+                html = `
+                    <div class="p-3 mb-2 rounded" style="background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border);">
+                        <h6 class="font-weight-bold mb-2" style="color: var(--text-primary);"><i class="fa fa-info-circle mr-2 text-info"></i> Product Details</h6>
+                        <div class="row" style="color: var(--text-primary);">
+                            <div class="col-6 text-muted small">Item ID:</div>
+                            <div class="col-6 font-weight-bold text-right">${menuItem.id}</div>
+                            <div class="col-6 text-muted small">Name:</div>
+                            <div class="col-6 font-weight-bold text-right">${menuItem.name}</div>
+                            <div class="col-6 text-muted small">Category:</div>
+                            <div class="col-6 text-right">${menuItem.category}</div>
+                            <div class="col-6 text-muted small">Units Sold:</div>
+                            <div class="col-6 text-warning font-weight-bold text-right">${qty} units</div>
+                            <div class="col-6 text-muted small">Market Share:</div>
+                            <div class="col-6 text-info font-weight-bold text-right">${percentage}%</div>
+                        </div>
+                    </div>
+                `;
+            } else {
+                html = `
+                    <div class="p-3 mb-2 rounded" style="background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border);">
+                        <h6 class="font-weight-bold mb-2" style="color: var(--text-primary);"><i class="fa fa-columns mr-2 text-info"></i> Comparison Details</h6>
+                        <div style="max-height: 150px; overflow-y: auto;">
+                            <table class="table table-sm table-borderless mb-0" style="font-size: 0.85em; color: var(--text-primary);">
+                                <thead>
+                                    <tr class="text-muted border-bottom" style="border-color: rgba(255,255,255,0.1) !important;">
+                                        <th>ID</th>
+                                        <th>Name</th>
+                                        <th>Category</th>
+                                        <th class="text-right">Units</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                `;
+                selectedCompareItems.forEach(name => {
+                    const menuItem = allMenuItems.find(i => i.name === name) || { id: "??", name: name, category: "Main Dish" };
+                    const qty = getSalesQty(name);
+                    html += `
+                                    <tr>
+                                        <td><strong class="text-secondary">${menuItem.id}</strong></td>
+                                        <td class="font-weight-bold">${menuItem.name}</td>
+                                        <td>${menuItem.category}</td>
+                                        <td class="text-right text-warning font-weight-bold">${qty}</td>
+                                    </tr>
+                    `;
+                });
+                html += `
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            detailsContainer.innerHTML = html;
+            
+            // Draw comparison chart with selected items
+            const chartItems = selectedCompareItems.map(name => {
+                const menuItem = allMenuItems.find(i => i.name === name) || { id: "??", name: name, category: "Main Dish" };
+                return {
+                    name: name,
+                    qty: getSalesQty(name),
+                    category: menuItem.category
+                };
+            });
+            renderChartInstance("comparisonChart", chartItems);
+        }
+
+        function renderChartInstance(canvasId, itemsList) {
             if (charts[canvasId]) {
                 charts[canvasId].destroy();
             }
 
-            const ctx = document.getElementById(canvasId).getContext('2d');
+            const canvasElement = document.getElementById(canvasId);
+            if (!canvasElement) return;
+            const ctx = canvasElement.getContext('2d');
 
-            if (topItems.length === 0) {
-                // Draw empty placeholder
+            if (itemsList.length === 0) {
+                ctx.clearRect(0, 0, canvasElement.width, canvasElement.height);
                 ctx.font = "14px Inter";
                 ctx.fillStyle = "#888";
                 ctx.textAlign = "center";
-                ctx.fillText("No sales records", 140, 140);
+                ctx.fillText("No items selected", canvasElement.width / 2 || 140, canvasElement.height / 2 || 120);
                 return;
             }
 
-            const labels = topItems.map(i => i.name);
-            const data = topItems.map(i => i.qty);
+            const labels = itemsList.map(i => i.name);
+            const data = itemsList.map(i => i.qty);
+
+            const palette = [
+                '#2563EB', '#4F46E5', '#10B981', '#F59E0B', '#EF4444',
+                '#8B5CF6', '#EC4899', '#14B8A6', '#F97316', '#6B7280'
+            ];
 
             charts[canvasId] = new Chart(ctx, {
                 type: 'doughnut',
@@ -341,13 +556,7 @@
                     labels: labels,
                     datasets: [{
                         data: data,
-                        backgroundColor: [
-                            '#2563EB', /* Vibrant Blue */
-                            '#4F46E5', /* Indigo */
-                            '#10B981', /* Emerald */
-                            '#F59E0B', /* Amber */
-                            '#EF4444'  /* Crimson */
-                        ],
+                        backgroundColor: palette.slice(0, itemsList.length),
                         borderWidth: 1
                     }]
                 },
@@ -356,12 +565,19 @@
                     maintainAspectRatio: false,
                     plugins: {
                         legend: {
-                            display: false /* Hide legendary for responsive cards */
+                            display: false
                         }
                     }
                 }
             });
         }
+
+        // Real-time Theme Change Reactive Listener
+        window.addEventListener("themeChanged", () => {
+            if (typeof processSalesData === "function") {
+                processSalesData();
+            }
+        });
 
         // Real-time Theme Change Reactive Listener
         window.addEventListener("themeChanged", () => {

@@ -11578,3 +11578,244 @@ h1, h2, h3, h4, h5, h6 {
     margin-left: 0 !important;
   }
 }
+
+/* ==========================================================
+   PREMIUM LUXURY HOSPITALITY VISUAL REDESIGN (5-STAR ADMIN / POS OVERRIDES)
+   ========================================================== */
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+
+/* Apply Fonts Globally to Admin Portal */
+body, html, input, select, textarea, button, table, td, th {
+  font-family: 'Poppins', sans-serif !important;
+}
+
+h1, h2, h3, h4, h5, h6, .navbar-brand {
+  font-family: 'Playfair Display', serif !important;
+}
+
+/* Background Color Override */
+body, #layoutSidenav_content, .sb-nav-fixed {
+  background-color: #FAF8F4 !important;
+}
+
+/* Navbar */
+.sb-topnav {
+  background-color: #FFFFFF !important;
+  border-bottom: 1px solid #E7E2DA !important;
+  box-shadow: 0 4px 20px rgba(25, 30, 40, 0.02) !important;
+  height: 64px !important;
+}
+
+.sb-topnav .navbar-brand {
+  color: #23252F !important;
+  font-weight: 700 !important;
+  font-size: 1.35rem !important;
+  letter-spacing: 0.05em !important;
+}
+
+/* Sidenav (Sidebar Redesign to light boutique style) */
+.sb-sidenav {
+  background-color: #FFFFFF !important;
+  border-right: 1px solid #E7E2DA !important;
+}
+
+.sb-sidenav .nav-link {
+  color: #555F70 !important;
+  font-weight: 500 !important;
+  border-radius: 12px;
+  margin: 4px 12px !important;
+  padding: 10px 16px !important;
+  transition: all 200ms ease !important;
+}
+
+.sb-sidenav .nav-link .sb-nav-link-icon {
+  color: #7C8798 !important;
+  transition: all 200ms ease !important;
+}
+
+.sb-sidenav .nav-link:hover,
+.sb-sidenav .nav-link.active {
+  background-color: #F4EFE8 !important;
+  color: #8C1D2C !important;
+  font-weight: 600 !important;
+}
+
+.sb-sidenav .nav-link:hover .sb-nav-link-icon,
+.sb-sidenav .nav-link.active .sb-nav-link-icon {
+  color: #8C1D2C !important;
+}
+
+.sb-sidenav-menu-heading {
+  color: #7C8798 !important;
+  font-family: 'Poppins', sans-serif !important;
+  font-size: 0.75rem !important;
+  font-weight: 600 !important;
+  text-transform: uppercase !important;
+  padding: 24px 24px 8px !important;
+  letter-spacing: 0.08em !important;
+}
+
+.sb-sidenav-footer {
+  background-color: #F4EFE8 !important;
+  color: #555F70 !important;
+  border-top: 1px solid #E7E2DA !important;
+}
+
+/* Container Wrapper Padding Restructures */
+.wrapper, .container-fluid {
+  padding-top: 24px !important;
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+/* Premium Card Designs */
+.card, .report-container, .chart-box {
+  background-color: #FFFFFF !important;
+  border: 1px solid #E7E2DA !important;
+  border-radius: 20px !important;
+  box-shadow: 0 12px 40px rgba(25, 30, 40, 0.06) !important;
+  padding: 24px !important;
+  margin-bottom: 24px !important;
+  transition: all 200ms ease !important;
+}
+
+.card:hover, .report-container:hover, .chart-box:hover {
+  box-shadow: 0 20px 50px rgba(25, 30, 40, 0.09) !important;
+}
+
+.card h5, .report-container h5, .chart-box h6 {
+  font-family: 'Playfair Display', serif !important;
+  font-weight: 700 !important;
+  color: #23252F !important;
+  margin-bottom: 16px !important;
+}
+
+/* Premium Table Designs (Card list look) */
+.table {
+  border-collapse: separate !important;
+  border-spacing: 0 8px !important;
+  background: transparent !important;
+  width: 100% !important;
+}
+
+.table thead th {
+  border-bottom: 2px solid #E7E2DA !important;
+  color: #7C8798 !important;
+  font-weight: 600 !important;
+  font-size: 0.85rem !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.05em !important;
+  background: transparent !important;
+  padding: 12px 20px !important;
+}
+
+.table tbody tr {
+  background-color: #FFFFFF !important;
+  box-shadow: 0 4px 12px rgba(25, 30, 40, 0.02) !important;
+  transition: all 200ms ease !important;
+}
+
+.table tbody tr:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(25, 30, 40, 0.05) !important;
+}
+
+.table tbody tr td {
+  border: none !important;
+  padding: 16px 20px !important;
+  color: #555F70 !important;
+  vertical-align: middle !important;
+}
+
+.table tbody tr td:first-child {
+  border-top-left-radius: 14px !important;
+  border-bottom-left-radius: 14px !important;
+  border-left: 1px solid #E7E2DA !important;
+}
+
+.table tbody tr td:last-child {
+  border-top-right-radius: 14px !important;
+  border-bottom-right-radius: 14px !important;
+  border-right: 1px solid #E7E2DA !important;
+}
+
+/* Forms & inputs styling */
+.form-control, .form-select {
+  background-color: #FFFFFF !important;
+  border: 1px solid #E7E2DA !important;
+  border-radius: 14px !important;
+  color: #23252F !important;
+  padding: 10px 16px !important;
+  transition: all 200ms ease !important;
+}
+
+.form-control:focus, .form-select:focus {
+  border-color: #8C1D2C !important;
+  box-shadow: 0 0 0 3px rgba(140, 29, 44, 0.12) !important;
+  outline: none !important;
+}
+
+/* Buttons style mappings */
+.btn-primary, .btn-dark, .btn-outline-dark, .btn-light {
+  border-radius: 14px !important;
+  font-weight: 600 !important;
+  padding: 10px 24px !important;
+  transition: all 200ms ease !important;
+}
+
+.btn-primary, .btn-dark {
+  background-color: #8C1D2C !important;
+  border-color: #8C1D2C !important;
+  color: #FFFFFF !important;
+}
+
+.btn-primary:hover, .btn-dark:hover {
+  background-color: #6E1623 !important;
+  border-color: #6E1623 !important;
+  color: #FFFFFF !important;
+}
+
+.btn-outline-dark {
+  border-color: #E7E2DA !important;
+  color: #555F70 !important;
+}
+
+.btn-outline-dark:hover, .btn-outline-dark.active {
+  background-color: #8C1D2C !important;
+  border-color: #8C1D2C !important;
+  color: #FFFFFF !important;
+}
+
+/* Badges rounded */
+.badge {
+  border-radius: 999px !important;
+  padding: 6px 12px !important;
+  font-size: 0.8rem !important;
+  font-weight: 600 !important;
+  text-transform: uppercase !important;
+}
+
+.badge-success {
+  background-color: #2D9D78 !important;
+  color: #FFFFFF !important;
+}
+
+.badge-warning {
+  background-color: #C68A00 !important;
+  color: #FFFFFF !important;
+}
+
+.badge-danger {
+  background-color: #C0392B !important;
+  color: #FFFFFF !important;
+}
+
+.badge-info {
+  background-color: #3A7BD5 !important;
+  color: #FFFFFF !important;
+}
+
+.badge-secondary {
+  background-color: #7C8798 !important;
+  color: #FFFFFF !important;
+}

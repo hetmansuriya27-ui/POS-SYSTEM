@@ -23,7 +23,7 @@ $customer_name = $_SESSION['customer_name'];
 $customer_mobile = $_SESSION['customer_mobile'];
 
 // Re-establish DB connection since components/header.php will close the connection
-$link = new mysqli(DB_HOST, DB_USER, DB_PASS, 'restaurantdb');
+$link = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
 if ($link->connect_error) {
     die("Connection failed: " . $link->connect_error);
 }
@@ -114,7 +114,7 @@ $sides = mysqli_fetch_all($resultsides, MYSQLI_ASSOC);
 <?php include_once('../components/header.php'); ?>
 <?php
 // Re-open DB connection since components/header.php automatically closes it at its end
-$link = new mysqli(DB_HOST, DB_USER, DB_PASS, 'restaurantdb');
+$link = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
 if ($link->connect_error) {
     die("Connection failed: " . $link->connect_error);
 }

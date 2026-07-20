@@ -19,11 +19,10 @@ if(isset($_SESSION['logged_account_id'])) {
     <style>
         body {
             font-family: 'Inter', sans-serif;
-            color: #0f172a;
-            background-color: #f8fafc;
-            background-image: 
-                radial-gradient(at 0% 0%, rgba(37, 99, 235, 0.05) 0px, transparent 45%),
-                radial-gradient(at 100% 0%, rgba(79, 70, 229, 0.05) 0px, transparent 45%);
+            background-image: linear-gradient(rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0.15)), url('../image/staff_login_bg.jpg');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -35,16 +34,16 @@ if(isset($_SESSION['logged_account_id'])) {
             width: 100%;
             max-width: 440px;
             padding: 40px;
-            background: #ffffff;
-            border: 1px solid rgba(0, 0, 0, 0.06);
+            background: rgba(255,255,255,.88) !important; /* Card */
+            border: 1px solid #E5E7EB !important; /* Card Border */
             border-radius: 24px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.04), 0 1px 3px rgba(0, 0, 0, 0.02);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.05);
             transition: all 0.3s ease;
         }
 
         .login-container:hover {
-            border-color: rgba(37, 99, 235, 0.15);
-            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.08), 0 0 30px rgba(37, 99, 235, 0.03);
+            border-color: #2563EB !important; /* Input Focus */
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.08);
         }
 
         h1.brand-title {
@@ -52,19 +51,20 @@ if(isset($_SESSION['logged_account_id'])) {
             font-weight: 800;
             font-size: 2.6rem;
             letter-spacing: -0.03em;
-            color: #0f172a;
+            color: #1F2937 !important; /* Logo */
             text-transform: uppercase;
+            text-align: center;
         }
 
         h1.brand-title span {
-            color: crimson;
+            color: #2563EB !important; /* Accent matching button */
         }
 
         h2.page-title {
             font-family: 'Outfit', sans-serif;
             font-weight: 600;
             font-size: 1.6rem;
-            color: #475569;
+            color: #111827 !important; /* Heading */
             margin-bottom: 30px;
             text-align: center;
             text-transform: uppercase;
@@ -72,7 +72,7 @@ if(isset($_SESSION['logged_account_id'])) {
         }
 
         .form-group label {
-            color: #475569;
+            color: #475569 !important; /* Labels */
             font-size: 1.05rem;
             font-weight: 500;
             margin-bottom: 8px;
@@ -80,30 +80,34 @@ if(isset($_SESSION['logged_account_id'])) {
             letter-spacing: 0.05em;
         }
 
-        /* Premium inputs */
+        /* Inputs */
         .form-control {
-            background-color: #f8fafc !important;
-            border: 1px solid #e2e8f0 !important;
+            background-color: #FFFFFF !important;
+            border: 1px solid #CBD5E1 !important; /* Input Border */
             border-radius: 12px !important;
-            color: #0f172a !important;
+            color: #1F2937 !important; /* Input Text */
             padding: 12px 18px !important;
             height: auto !important;
             transition: all 0.2s ease !important;
         }
 
         .form-control:focus {
-            background-color: #ffffff !important;
-            border-color: #2563EB !important;
+            background-color: #FFFFFF !important;
+            border-color: #2563EB !important; /* Input Focus */
             box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15) !important;
-            color: #0f172a !important;
+            color: #1F2937 !important; /* Input Text */
             outline: none !important;
+        }
+        
+        .form-control::placeholder {
+            color: #94A3B8 !important; /* Placeholder */
         }
 
         .input-group-append button {
-            border: 1px solid #e2e8f0 !important;
+            border: 1px solid #CBD5E1 !important; /* Input Border */
             border-left: none !important;
-            background-color: #f8fafc !important;
-            color: #475569 !important;
+            background-color: #FFFFFF !important;
+            color: #475569 !important; /* Labels */
             border-top-right-radius: 12px !important;
             border-bottom-right-radius: 12px !important;
             padding-left: 15px;
@@ -112,13 +116,13 @@ if(isset($_SESSION['logged_account_id'])) {
         }
 
         .input-group-append button:hover {
-            color: #0f172a;
-            background-color: rgba(37, 99, 235, 0.08) !important;
+            color: #111827; /* Heading */
+            background-color: rgba(37, 99, 235, 0.05) !important;
         }
 
         .btn-submit {
-            background: #2563eb;
-            color: white;
+            background: #2563EB !important; /* Button */
+            color: #FFFFFF !important; /* White Text */
             border: none;
             border-radius: 12px;
             padding: 14px;
@@ -132,16 +136,20 @@ if(isset($_SESSION['logged_account_id'])) {
         }
 
         .btn-submit:hover {
-            background: #1d4ed8;
+            background: #1D4ED8 !important; /* Button Hover */
             transform: translateY(-2px);
             box-shadow: 0 6px 18px rgba(37, 99, 235, 0.2);
-            color: white;
+            color: #FFFFFF !important;
+        }
+        
+        .btn-submit:active {
+            background: #1E40AF !important; /* Button Active */
         }
 
         .btn-cancel {
             background: transparent;
-            color: #475569;
-            border: 1px solid #e2e8f0;
+            color: #475569 !important; /* Labels */
+            border: 1px solid #CBD5E1 !important; /* Input Border */
             border-radius: 12px;
             padding: 12px;
             font-weight: bold;
@@ -150,9 +158,16 @@ if(isset($_SESSION['logged_account_id'])) {
         }
 
         .btn-cancel:hover {
-            color: #0f172a;
+            color: #111827 !important; /* Heading */
             background-color: #f1f5f9;
             text-decoration: none;
+        }
+        
+        .alert-danger {
+            background-color: rgba(220, 38, 38, 0.1) !important;
+            border-color: #DC2626 !important; /* Error */
+            color: #DC2626 !important;
+            border-radius: 12px;
         }
     </style>
 </head>

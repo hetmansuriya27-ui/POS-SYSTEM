@@ -13,7 +13,7 @@ $customer_name = $_SESSION['customer_name'];
 $customer_mobile = $_SESSION['customer_mobile'];
 
 // Re-establish DB connection
-$link = new mysqli(DB_HOST, DB_USER, DB_PASS, 'restaurantdb');
+$link = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
 if ($link->connect_error) {
     die("Connection failed: " . $link->connect_error);
 }
